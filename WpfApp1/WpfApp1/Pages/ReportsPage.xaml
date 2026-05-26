@@ -1,0 +1,139 @@
+﻿<Page x:Class="WpfApp1.Pages.ReportsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+      xmlns:local="clr-namespace:WpfApp1.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Отчеты и Аналитика" Loaded="Page_Loaded" Background="#F3F4F6">
+
+    <Page.Resources>
+        <Style TargetType="Button" x:Key="PrimaryBtn">
+            <Setter Property="Background" Value="#DC2626"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#B91C1C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="DatePicker" x:Key="ModernDatePicker">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,15,0"/>
+            <Setter Property="Width" Value="130"/>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Key="FilterLabel">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#4B5563"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="20">
+        <Border Background="White" CornerRadius="10">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" Direction="270" ShadowDepth="2" Opacity="0.05"/>
+            </Border.Effect>
+
+            <TabControl x:Name="MainTabControl" Margin="10" SelectionChanged="MainTabControl_SelectionChanged" Background="Transparent" BorderThickness="0">
+                <TabControl.Resources>
+                    <Style TargetType="TabItem">
+                        <Setter Property="FontSize" Value="15"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Foreground" Value="#4B5563"/>
+                        <Setter Property="Padding" Value="15,10"/>
+                        <Setter Property="Margin" Value="0,0,5,0"/>
+                    </Style>
+                </TabControl.Resources>
+
+                <TabItem Header="Остатки по группам">
+                    <Grid Margin="15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,15" HorizontalAlignment="Right">
+                            <Button Content="Обновить данные" Style="{StaticResource PrimaryBtn}" Click="BtnRefreshTab1_Click"/>
+                        </StackPanel>
+
+                        <lvc:PieChart Grid.Row="1" Series="{Binding BloodGroupSeries}" LegendPosition="Right"/>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Динамика донаций">
+                    <Grid Margin="15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,15">
+                            <TextBlock Text="Период с:" Style="{StaticResource FilterLabel}"/>
+                            <DatePicker x:Name="DpDynFrom" Style="{StaticResource ModernDatePicker}"/>
+                            <TextBlock Text="по:" Style="{StaticResource FilterLabel}"/>
+                            <DatePicker x:Name="DpDynTo" Style="{StaticResource ModernDatePicker}"/>
+                            <Button Content="Обновить график" Style="{StaticResource PrimaryBtn}" Click="BtnRefreshTab2_Click" Margin="10,0,0,0"/>
+                        </StackPanel>
+
+                        <lvc:CartesianChart Grid.Row="1" Series="{Binding DynamicsSeries}" XAxes="{Binding DynamicsXAxes}"/>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Контроль сроков годности">
+                    <Grid Margin="15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,15" HorizontalAlignment="Right">
+                            <Button Content="Обновить данные" Style="{StaticResource PrimaryBtn}" Click="BtnRefreshTab3_Click"/>
+                        </StackPanel>
+
+                        <lvc:CartesianChart Grid.Row="1" Series="{Binding ExpirationSeries}" XAxes="{Binding ExpirationXAxes}"/>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Топ доноров">
+                    <Grid Margin="15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,15">
+                            <TextBlock Text="Период с:" Style="{StaticResource FilterLabel}"/>
+                            <DatePicker x:Name="DpTopFrom" Style="{StaticResource ModernDatePicker}"/>
+                            <TextBlock Text="по:" Style="{StaticResource FilterLabel}"/>
+                            <DatePicker x:Name="DpTopTo" Style="{StaticResource ModernDatePicker}"/>
+                            <Button Content="Обновить рейтинг" Style="{StaticResource PrimaryBtn}" Click="BtnRefreshTab4_Click" Margin="10,0,0,0"/>
+                        </StackPanel>
+
+                        <lvc:CartesianChart Grid.Row="1" Series="{Binding TopDonorsSeries}" XAxes="{Binding TopDonorsXAxes}" YAxes="{Binding TopDonorsYAxes}"/>
+                    </Grid>
+                </TabItem>
+
+            </TabControl>
+        </Border>
+    </Grid>
+</Page>

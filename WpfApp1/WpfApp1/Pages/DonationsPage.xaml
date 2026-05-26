@@ -1,0 +1,209 @@
+﻿<Page x:Class="WpfApp1.Pages.DonationsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:WpfApp1.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Донации" Loaded="Page_Loaded" Background="#F3F4F6">
+
+    <Page.Resources>
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Background" Value="#F9FAFB"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Background" Value="#F9FAFB"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+        </Style>
+
+        <Style x:Key="ModernDatePicker" TargetType="DatePicker">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Key="FormLabel">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#4B5563"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <Style TargetType="Button" x:Key="ActionBtn">
+            <Setter Property="Background" Value="#E5E7EB"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#D1D5DB"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="Button" x:Key="PrimaryBtn" BasedOn="{StaticResource ActionBtn}">
+            <Setter Property="Background" Value="#DC2626"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#B91C1C"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="Button" x:Key="SuccessBtn" BasedOn="{StaticResource ActionBtn}">
+            <Setter Property="Background" Value="#10B981"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#059669"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <Grid Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="6.5*"/>
+                <ColumnDefinition Width="3.5*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,10,0">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10" Direction="270" ShadowDepth="2" Opacity="0.05"/>
+                </Border.Effect>
+
+                <Grid Margin="15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Журнал донаций" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
+
+                    <DataGrid x:Name="DonationsGrid" Grid.Row="1" AutoGenerateColumns="False" 
+                              IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" 
+                              HorizontalGridLinesBrush="#E5E7EB" BorderThickness="0"
+                              RowBackground="White" AlternatingRowBackground="#F9FAFB" 
+                              RowHeight="40" Background="Transparent" Foreground="#374151">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#F3F4F6"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Foreground" Value="#4B5563"/>
+                                <Setter Property="Padding" Value="10,8"/>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Дата" Binding="{Binding DonationDate, StringFormat=\{0:dd.MM.yyyy\}}" Width="90"/>
+                            <DataGridTextColumn Header="Донор" Binding="{Binding Donor.FullName}" Width="*"/>
+                            <DataGridTextColumn Header="Тип" Binding="{Binding DonationType}" Width="120"/>
+                            <DataGridTextColumn Header="Объем (мл)" Binding="{Binding VolumeMl}" Width="90"/>
+                            <DataGridTextColumn Header="Статус" Binding="{Binding MedicalStatus}" Width="110"/>
+                            <DataGridTemplateColumn Header="Действия" Width="160">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button Content="✓" ToolTip="Допустить и разделить" Width="30" Height="25" Margin="0,0,5,0" Background="#10B981" Foreground="White" BorderThickness="0" Cursor="Hand" Click="Approve_Click"/>
+                                            <Button Content="✕" ToolTip="Брак (указать причину)" Width="30" Height="25" Background="#DC2626" Foreground="White" BorderThickness="0" Cursor="Hand" Click="Reject_Click"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10" Direction="270" ShadowDepth="2" Opacity="0.05"/>
+                </Border.Effect>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="FormPanel" Margin="20">
+                        <TextBlock Text="Оформление донации" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Донор *" Style="{StaticResource FormLabel}"/>
+                        <ComboBox x:Name="CmbDonor" Style="{StaticResource ModernComboBox}" IsEditable="True" IsTextSearchEnabled="True" DisplayMemberPath="FullName" SelectedValuePath="DonorId" SelectionChanged="CmbDonor_SelectionChanged"/>
+
+                        <TextBlock Text="Медицинский допуск (на сегодня) *" Style="{StaticResource FormLabel}"/>
+                        <ComboBox x:Name="CmbExam" Style="{StaticResource ModernComboBox}" DisplayMemberPath="Result" SelectedValuePath="ExamId"/>
+
+                        <TextBlock Text="Тип донации *" Style="{StaticResource FormLabel}"/>
+                        <ComboBox x:Name="CmbDonationType" Style="{StaticResource ModernComboBox}">
+                            <ComboBoxItem Content="Цельная кровь"/>
+                            <ComboBoxItem Content="Плазма"/>
+                            <ComboBoxItem Content="Тромбоциты"/>
+                            <ComboBoxItem Content="Эритроциты (аферез)"/>
+                            <ComboBoxItem Content="Гранулоциты"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Объем (мл) *" Style="{StaticResource FormLabel}"/>
+                        <TextBox x:Name="TxtVolume" Style="{StaticResource ModernTextBox}"/>
+
+                        <TextBlock Text="Дата донации *" Style="{StaticResource FormLabel}"/>
+                        <DatePicker x:Name="DpDonationDate" Style="{StaticResource ModernDatePicker}"/>
+
+                        <Button x:Name="BtnAdd" Content="Зарегистрировать донацию" Style="{StaticResource PrimaryBtn}" Margin="0,10,0,15" Click="BtnAdd_Click"/>
+
+                        <Button x:Name="BtnClear" Content="Очистить форму" Style="{StaticResource ActionBtn}" Margin="0,0,0,10" Click="BtnClear_Click"/>
+                        <Button x:Name="BtnExport" Content="Экспорт в Excel" Style="{StaticResource SuccessBtn}" Click="BtnExport_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="RejectOverlay" Visibility="Collapsed" Background="#80000000">
+            <Border Background="White" Width="400" Height="220" VerticalAlignment="Center" HorizontalAlignment="Center" CornerRadius="10">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" Opacity="0.3"/>
+                </Border.Effect>
+                <StackPanel Margin="20">
+                    <TextBlock Text="Укажите причину брака донации" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+                    <TextBox x:Name="TxtRejectReason" Style="{StaticResource ModernTextBox}" Height="80" TextWrapping="Wrap" AcceptsReturn="True"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <Button Content="Отмена" Style="{StaticResource ActionBtn}" Width="100" Margin="0,0,10,0" Click="CancelReject_Click"/>
+                        <Button Content="Оформить брак" Style="{StaticResource PrimaryBtn}" Width="140" Click="ConfirmReject_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

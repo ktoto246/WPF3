@@ -1,0 +1,175 @@
+﻿<Page x:Class="WpfApp1.Pages.RecipientsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:WpfApp1.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Получатели" Loaded="Page_Loaded" Background="#F3F4F6">
+
+    <Page.Resources>
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="Background" Value="#F9FAFB"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Key="FormLabel">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#4B5563"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <Style TargetType="Button" x:Key="ActionBtn">
+            <Setter Property="Background" Value="#E5E7EB"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#D1D5DB"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="PrimaryBtn" BasedOn="{StaticResource ActionBtn}">
+            <Setter Property="Background" Value="#DC2626"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#B91C1C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="6*"/>
+            <ColumnDefinition Width="4*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,10,0">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" Direction="270" ShadowDepth="2" Opacity="0.05"/>
+            </Border.Effect>
+
+            <Grid Margin="15">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Список получателей крови" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
+
+                <DataGrid x:Name="RecipientsGrid" Grid.Row="1" AutoGenerateColumns="False" 
+                          IsReadOnly="True" SelectionChanged="RecipientsGrid_SelectionChanged"
+                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" 
+                          HorizontalGridLinesBrush="#E5E7EB" BorderThickness="0"
+                          RowBackground="White" AlternatingRowBackground="#F9FAFB" 
+                          RowHeight="40" Background="Transparent" Foreground="#374151">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F3F4F6"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Foreground" Value="#4B5563"/>
+                            <Setter Property="Padding" Value="10,8"/>
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding RecipientId}" Width="50"/>
+                        <DataGridTextColumn Header="Название учреждения" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Адрес" Binding="{Binding Address}" Width="*"/>
+                        <DataGridTextColumn Header="Телефон" Binding="{Binding ContactPhone}" Width="120"/>
+                        <DataGridTextColumn Header="Контактное лицо" Binding="{Binding ContactPerson}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+        <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0" VerticalAlignment="Top">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" Direction="270" ShadowDepth="2" Opacity="0.05"/>
+            </Border.Effect>
+
+            <StackPanel Margin="20">
+                <TextBlock Text="Управление данными" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,20"/>
+
+                <TextBlock Text="Название (мин. 3 симв.) *" Style="{StaticResource FormLabel}"/>
+                <TextBox x:Name="TxtName" Style="{StaticResource ModernTextBox}" ToolTip="Например: ГКБ №1 им. Пирогова"/>
+
+                <TextBlock Text="Адрес учреждения" Style="{StaticResource FormLabel}"/>
+                <TextBox x:Name="TxtAddress" Style="{StaticResource ModernTextBox}"/>
+
+                <TextBlock Text="Телефон (+7-XXX-XXX-XXXX)" Style="{StaticResource FormLabel}"/>
+                <TextBox x:Name="TxtPhone" Style="{StaticResource ModernTextBox}" ToolTip="Строгий формат: +7-900-111-2233"/>
+
+                <TextBlock Text="Контактное лицо" Style="{StaticResource FormLabel}"/>
+                <TextBox x:Name="TxtPerson" Style="{StaticResource ModernTextBox}" ToolTip="ФИО ответственного врача"/>
+
+                <Grid Margin="0,10,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="BtnAdd" Grid.Column="0" Content="Добавить" Style="{StaticResource PrimaryBtn}" Margin="0,0,5,0" Click="BtnAdd_Click"/>
+                    <Button x:Name="BtnUpdate" Grid.Column="1" Content="Сохранить" Style="{StaticResource ActionBtn}" Margin="5,0,5,0" Click="BtnUpdate_Click"/>
+                    <Button x:Name="BtnDelete" Grid.Column="2" Content="Удалить" Style="{StaticResource ActionBtn}" Margin="5,0,0,0" Click="BtnDelete_Click"/>
+                </Grid>
+
+                <Separator Margin="0,10,0,15" Background="#E5E7EB"/>
+
+                <Button x:Name="BtnClear" Content="Очистить форму (Сброс выбора)" Style="{StaticResource ActionBtn}" Margin="0,0,0,10" Click="BtnClear_Click"/>
+                <Button x:Name="BtnExport" Content="Экспорт таблицы в Excel" Style="{StaticResource PrimaryBtn}" Background="#10B981" Click="BtnExport_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>
