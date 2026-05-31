@@ -19,9 +19,6 @@ using WpfApp1.Models;
 
 namespace WpfApp1.Pages
 {
-    /// <summary>
-    /// Логика взаимодействия для DonorsPage.xaml
-    /// </summary>
     public partial class DonorsPage : Page
     {
         private Donor _selectedDonor;
@@ -53,9 +50,14 @@ namespace WpfApp1.Pages
                 DpBirthDate.SelectedDate = donor.BirthDate;
                 TxtPassport.Text = donor.PassportData;
                 TxtPhone.Text = donor.ContactPhone;
+                TxtEmail.Text = donor.Email;
+                TxtAddress.Text = donor.Address;
                 TxtNotes.Text = donor.Notes;
                 DpDisqualifiedUntil.SelectedDate = donor.DisqualifiedUntil;
+                ChkHonorary.IsChecked = donor.IsHonoraryDonor;
+                TxtHonoraryNumber.Text = donor.HonoraryDonorNumber;
 
+                SetComboBoxValue(CmbGender, donor.Gender);
                 SetComboBoxValue(CmbBloodGroup, donor.BloodGroup);
                 SetComboBoxValue(CmbRhFactor, donor.RhFactor);
                 SetComboBoxValue(CmbKell, donor.KellAntigen);
@@ -93,6 +95,17 @@ namespace WpfApp1.Pages
             }
         }
 
+        private void ChkHonorary_Changed(object sender, RoutedEventArgs e)
+        {
+            if (ChkHonorary.IsChecked == true)
+                TxtHonoraryNumber.Visibility = Visibility.Visible;
+            else
+            {
+                TxtHonoraryNumber.Visibility = Visibility.Collapsed;
+                TxtHonoraryNumber.Clear();
+            }
+        }
+
         private void BtnClear_Click(object sender, RoutedEventArgs e)
         {
             _selectedDonor = null;
@@ -100,8 +113,13 @@ namespace WpfApp1.Pages
             DpBirthDate.SelectedDate = null;
             TxtPassport.Clear();
             TxtPhone.Clear();
+            TxtEmail.Clear();
+            TxtAddress.Clear();
             TxtNotes.Clear();
+            ChkHonorary.IsChecked = false;
+            TxtHonoraryNumber.Clear();
             DpDisqualifiedUntil.SelectedDate = null;
+            CmbGender.SelectedIndex = -1;
             CmbBloodGroup.SelectedIndex = -1;
             CmbRhFactor.SelectedIndex = -1;
             CmbKell.SelectedIndex = -1;
@@ -109,8 +127,32 @@ namespace WpfApp1.Pages
             DonorsGrid.SelectedItem = null;
         }
 
+        private void FormatPhone()
+        {
+            string phone = TxtPhone.Text;
+            if (string.IsNullOrWhiteSpace(phone)) return;
+
+            string digits = new string(phone.Where(char.IsDigit).ToArray());
+
+            if (digits.Length == 11 && (digits.StartsWith("7") || digits.StartsWith("8")))
+            {
+                TxtPhone.Text = $"+7-{digits.Substring(1, 3)}-{digits.Substring(4, 3)}-{digits.Substring(7, 4)}";
+            }
+            else if (digits.Length == 10)
+            {
+                TxtPhone.Text = $"+7-{digits.Substring(0, 3)}-{digits.Substring(3, 3)}-{digits.Substring(6, 4)}";
+            }
+        }
+
+        private void TxtPhone_LostFocus(object sender, RoutedEventArgs e)
+        {
+            FormatPhone();
+        }
+
         private bool ValidateForm(bool isUpdating)
         {
+            FormatPhone();
+
             if (string.IsNullOrWhiteSpace(TxtFullName.Text) || TxtFullName.Text.Length < 5 || !Regex.IsMatch(TxtFullName.Text, @"^[А-ЯЁа-яё\s\-]+$"))
             {
                 MessageBox.Show("ФИО должно содержать минимум 5 символов и состоять только из кириллицы, пробелов и дефисов.", "Ошибка валидации", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -145,9 +187,9 @@ namespace WpfApp1.Pages
                 return false;
             }
 
-            if (CmbBloodGroup.SelectedItem == null || CmbRhFactor.SelectedItem == null || CmbStatus.SelectedItem == null)
+            if (CmbGender.SelectedItem == null || CmbBloodGroup.SelectedItem == null || CmbRhFactor.SelectedItem == null || CmbStatus.SelectedItem == null)
             {
-                MessageBox.Show("Поля Группа крови, Резус-фактор и Статус обязательны для выбора.", "Ошибка валидации", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Поля Пол, Группа крови, Резус-фактор и Статус обязательны для выбора.", "Ошибка валидации", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 
@@ -183,18 +225,6 @@ namespace WpfApp1.Pages
                 }
             }
 
-            if (isUpdating && _selectedDonor != null && _selectedDonor.Status == "Временное отстранение" && status == "Активен")
-            {
-                if (_selectedDonor.DisqualifiedUntil.HasValue && _selectedDonor.DisqualifiedUntil.Value > DateTime.Today)
-                {
-                    var result = MessageBox.Show("Срок отстранения ещё не истёк. Вы уверены, что хотите снять отстранение?", "Подтверждение изменения статуса", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    if (result == MessageBoxResult.No)
-                    {
-                        return false;
-                    }
-                }
-            }
-
             return true;
         }
 
@@ -208,11 +238,16 @@ namespace WpfApp1.Pages
                 {
                     FullName = TxtFullName.Text.Trim(),
                     BirthDate = DpBirthDate.SelectedDate.Value,
+                    Gender = (CmbGender.SelectedItem as ComboBoxItem).Content.ToString(),
                     PassportData = TxtPassport.Text.Trim(),
                     BloodGroup = (CmbBloodGroup.SelectedItem as ComboBoxItem).Content.ToString(),
                     RhFactor = (CmbRhFactor.SelectedItem as ComboBoxItem).Content.ToString(),
                     KellAntigen = CmbKell.SelectedItem != null ? (CmbKell.SelectedItem as ComboBoxItem).Content.ToString() : null,
                     ContactPhone = string.IsNullOrWhiteSpace(TxtPhone.Text) ? null : TxtPhone.Text.Trim(),
+                    Email = string.IsNullOrWhiteSpace(TxtEmail.Text) ? null : TxtEmail.Text.Trim(),
+                    Address = string.IsNullOrWhiteSpace(TxtAddress.Text) ? null : TxtAddress.Text.Trim(),
+                    IsHonoraryDonor = ChkHonorary.IsChecked == true,
+                    HonoraryDonorNumber = ChkHonorary.IsChecked == true ? TxtHonoraryNumber.Text.Trim() : null,
                     Status = (CmbStatus.SelectedItem as ComboBoxItem).Content.ToString(),
                     DisqualifiedUntil = DpDisqualifiedUntil.SelectedDate,
                     Notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim(),
@@ -243,11 +278,16 @@ namespace WpfApp1.Pages
                 {
                     donor.FullName = TxtFullName.Text.Trim();
                     donor.BirthDate = DpBirthDate.SelectedDate.Value;
+                    donor.Gender = (CmbGender.SelectedItem as ComboBoxItem).Content.ToString();
                     donor.PassportData = TxtPassport.Text.Trim();
                     donor.BloodGroup = (CmbBloodGroup.SelectedItem as ComboBoxItem).Content.ToString();
                     donor.RhFactor = (CmbRhFactor.SelectedItem as ComboBoxItem).Content.ToString();
                     donor.KellAntigen = CmbKell.SelectedItem != null ? (CmbKell.SelectedItem as ComboBoxItem).Content.ToString() : null;
                     donor.ContactPhone = string.IsNullOrWhiteSpace(TxtPhone.Text) ? null : TxtPhone.Text.Trim();
+                    donor.Email = string.IsNullOrWhiteSpace(TxtEmail.Text) ? null : TxtEmail.Text.Trim();
+                    donor.Address = string.IsNullOrWhiteSpace(TxtAddress.Text) ? null : TxtAddress.Text.Trim();
+                    donor.IsHonoraryDonor = ChkHonorary.IsChecked == true;
+                    donor.HonoraryDonorNumber = ChkHonorary.IsChecked == true ? TxtHonoraryNumber.Text.Trim() : null;
                     donor.Status = (CmbStatus.SelectedItem as ComboBoxItem).Content.ToString();
                     donor.DisqualifiedUntil = DpDisqualifiedUntil.SelectedDate;
                     donor.Notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim();
@@ -277,27 +317,31 @@ namespace WpfApp1.Pages
 
                         worksheet.Cell(1, 1).Value = "ID";
                         worksheet.Cell(1, 2).Value = "ФИО";
-                        worksheet.Cell(1, 3).Value = "Дата рождения";
-                        worksheet.Cell(1, 4).Value = "Паспорт";
-                        worksheet.Cell(1, 5).Value = "Группа крови";
-                        worksheet.Cell(1, 6).Value = "Резус-фактор";
-                        worksheet.Cell(1, 7).Value = "Kell-антиген";
+                        worksheet.Cell(1, 3).Value = "Пол";
+                        worksheet.Cell(1, 4).Value = "Дата рождения";
+                        worksheet.Cell(1, 5).Value = "Паспорт";
+                        worksheet.Cell(1, 6).Value = "Группа крови";
+                        worksheet.Cell(1, 7).Value = "Резус-фактор";
                         worksheet.Cell(1, 8).Value = "Телефон";
-                        worksheet.Cell(1, 9).Value = "Статус";
-                        worksheet.Cell(1, 10).Value = "Отстранение до";
+                        worksheet.Cell(1, 9).Value = "Email";
+                        worksheet.Cell(1, 10).Value = "Адрес";
+                        worksheet.Cell(1, 11).Value = "Статус";
+                        worksheet.Cell(1, 12).Value = "Примечание";
 
                         for (int i = 0; i < data.Count; i++)
                         {
                             worksheet.Cell(i + 2, 1).Value = data[i].DonorId;
                             worksheet.Cell(i + 2, 2).Value = data[i].FullName;
-                            worksheet.Cell(i + 2, 3).Value = data[i].BirthDate.ToString("yyyy-MM-dd");
-                            worksheet.Cell(i + 2, 4).Value = data[i].PassportData;
-                            worksheet.Cell(i + 2, 5).Value = data[i].BloodGroup;
-                            worksheet.Cell(i + 2, 6).Value = data[i].RhFactor;
-                            worksheet.Cell(i + 2, 7).Value = data[i].KellAntigen;
+                            worksheet.Cell(i + 2, 3).Value = data[i].Gender;
+                            worksheet.Cell(i + 2, 4).Value = data[i].BirthDate.ToString("yyyy-MM-dd");
+                            worksheet.Cell(i + 2, 5).Value = data[i].PassportData;
+                            worksheet.Cell(i + 2, 6).Value = data[i].BloodGroup;
+                            worksheet.Cell(i + 2, 7).Value = data[i].RhFactor;
                             worksheet.Cell(i + 2, 8).Value = data[i].ContactPhone;
-                            worksheet.Cell(i + 2, 9).Value = data[i].Status;
-                            worksheet.Cell(i + 2, 10).Value = data[i].DisqualifiedUntil?.ToString("yyyy-MM-dd");
+                            worksheet.Cell(i + 2, 9).Value = data[i].Email;
+                            worksheet.Cell(i + 2, 10).Value = data[i].Address;
+                            worksheet.Cell(i + 2, 11).Value = data[i].Status;
+                            worksheet.Cell(i + 2, 12).Value = data[i].Notes;
                         }
 
                         worksheet.Columns().AdjustToContents();

@@ -6,7 +6,7 @@
       xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
       xmlns:local="clr-namespace:WpfApp1.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="550" d:DesignWidth="900"
       Title="Отчеты и Аналитика" Loaded="Page_Loaded" Background="#F3F4F6">
 
     <Page.Resources>
@@ -65,6 +65,7 @@
                     </Style>
                 </TabControl.Resources>
 
+                <!-- Вкладка 1: Остатки (Починил) -->
                 <TabItem Header="Остатки по группам">
                     <Grid Margin="15">
                         <Grid.RowDefinitions>
@@ -80,6 +81,7 @@
                     </Grid>
                 </TabItem>
 
+                <!-- Вкладка 2: Динамика донаций (Починил) -->
                 <TabItem Header="Динамика донаций">
                     <Grid Margin="15">
                         <Grid.RowDefinitions>
@@ -99,21 +101,27 @@
                     </Grid>
                 </TabItem>
 
-                <TabItem Header="Контроль сроков годности">
+                <!-- Вкладка 3: НОВЫЙ ГРАФИК - Причины списаний -->
+                <TabItem Header="Статистика списаний">
                     <Grid Margin="15">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,15" HorizontalAlignment="Right">
-                            <Button Content="Обновить данные" Style="{StaticResource PrimaryBtn}" Click="BtnRefreshTab3_Click"/>
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,15">
+                            <TextBlock Text="Период с:" Style="{StaticResource FilterLabel}"/>
+                            <DatePicker x:Name="DpWriteOffFrom" Style="{StaticResource ModernDatePicker}"/>
+                            <TextBlock Text="по:" Style="{StaticResource FilterLabel}"/>
+                            <DatePicker x:Name="DpWriteOffTo" Style="{StaticResource ModernDatePicker}"/>
+                            <Button Content="Обновить данные" Style="{StaticResource PrimaryBtn}" Click="BtnRefreshTab3_Click" Margin="10,0,0,0"/>
                         </StackPanel>
 
-                        <lvc:CartesianChart Grid.Row="1" Series="{Binding ExpirationSeries}" XAxes="{Binding ExpirationXAxes}"/>
+                        <lvc:PieChart Grid.Row="1" Series="{Binding WriteOffSeries}" LegendPosition="Right"/>
                     </Grid>
                 </TabItem>
 
+                <!-- Вкладка 4: Топ доноров (Починил) -->
                 <TabItem Header="Топ доноров">
                     <Grid Margin="15">
                         <Grid.RowDefinitions>
@@ -132,7 +140,6 @@
                         <lvc:CartesianChart Grid.Row="1" Series="{Binding TopDonorsSeries}" XAxes="{Binding TopDonorsXAxes}" YAxes="{Binding TopDonorsYAxes}"/>
                     </Grid>
                 </TabItem>
-
             </TabControl>
         </Border>
     </Grid>

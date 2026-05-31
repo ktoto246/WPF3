@@ -20,9 +20,6 @@ using WpfApp1.Models;
 
 namespace WpfApp1.Pages
 {
-    /// <summary>
-    /// Логика взаимодействия для MedicalExamsPage.xaml
-    /// </summary>
     public partial class MedicalExamsPage : Page
     {
         public MedicalExamsPage()
@@ -81,7 +78,6 @@ namespace WpfApp1.Pages
                             DisableForm();
                             return;
                         }
-
                         EnableForm();
                     }
                 }
@@ -135,7 +131,10 @@ namespace WpfApp1.Pages
             TxtWeight.Clear();
             TxtTemperature.Clear();
             TxtPulse.Clear();
-            TxtBloodPressure.Clear();
+            TxtSystolic.Clear();
+            TxtDiastolic.Clear();
+            TxtProtein.Clear();
+            TxtAlt.Clear();
             TxtNotes.Clear();
             EnableForm();
         }
@@ -188,62 +187,66 @@ namespace WpfApp1.Pages
 
             if (result == "Отведён")
             {
-                if (string.IsNullOrWhiteSpace(TxtRejectionReason.Text) || TxtRejectionReason.Text.Trim().Length < 10)
+                if (string.IsNullOrWhiteSpace(TxtRejectionReason.Text))
                 {
-                    MessageBox.Show("Причина отвода должна содержать не менее 10 символов.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Укажите причину отвода.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return false;
                 }
             }
             else if (result == "Допущен")
             {
-                decimal? hemoglobin = ParseDecimal(TxtHemoglobin.Text);
-                if (!hemoglobin.HasValue || hemoglobin < 50 || hemoglobin > 250)
+                // Убрали жесткие медицинские рамки, оставили только защиту от опечаток (базовые лимиты)
+                decimal? weight = ParseDecimal(TxtWeight.Text);
+                if (!weight.HasValue || weight <= 0 || weight > 500)
                 {
-                    MessageBox.Show("Укажите корректный гемоглобин в диапазоне от 50 до 250.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Укажите корректный вес.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return false;
                 }
 
-                decimal? weight = ParseDecimal(TxtWeight.Text);
-                if (!weight.HasValue || weight < 45 || weight > 200)
+                decimal? hemoglobin = ParseDecimal(TxtHemoglobin.Text);
+                if (!hemoglobin.HasValue || hemoglobin <= 0 || hemoglobin > 500)
                 {
-                    MessageBox.Show("Укажите корректный вес в диапазоне от 45 до 200.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Укажите корректный гемоглобин.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return false;
                 }
 
                 decimal? temp = ParseDecimal(TxtTemperature.Text);
-                if (!temp.HasValue || temp < 35.0m || temp > 37.2m)
+                if (!temp.HasValue || temp <= 0 || temp > 100)
                 {
-                    if (temp > 37.2m)
-                    {
-                        MessageBox.Show("Температура выше нормы. Донор не может быть допущен.", "Блокировка", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return false;
-                    }
-                    MessageBox.Show("Укажите корректную температуру в диапазоне от 35.0 до 37.2.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Укажите корректную температуру.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return false;
                 }
 
-                if (!string.IsNullOrWhiteSpace(TxtPulse.Text))
+                if (!short.TryParse(TxtSystolic.Text, out short sys) || sys <= 0 || sys > 500)
                 {
-                    if (!int.TryParse(TxtPulse.Text.Trim(), out int pulse) || pulse < 40 || pulse > 150)
-                    {
-                        MessageBox.Show("Укажите корректный пульс в диапазоне от 40 до 150.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return false;
-                    }
-                }
-
-                if (weight < 50)
-                {
-                    MessageBox.Show("Донор с весом менее 50 кг не допускается к донации.", "Блокировка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Укажите корректное систолическое давление.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return false;
                 }
 
-                if (hemoglobin < 120)
+                if (!short.TryParse(TxtDiastolic.Text, out short dia) || dia <= 0 || dia > 500)
                 {
-                    var msgResult = MessageBox.Show("Гемоглобин ниже нормы. Убедитесь в правильности данных. Продолжить сохранение?", "Предупреждение", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                    if (msgResult == MessageBoxResult.No)
-                    {
-                        return false;
-                    }
+                    MessageBox.Show("Укажите корректное диастолическое давление.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return false;
+                }
+
+                if (!short.TryParse(TxtPulse.Text, out short pulse) || pulse <= 0 || pulse > 500)
+                {
+                    MessageBox.Show("Укажите корректный пульс.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return false;
+                }
+
+                decimal? protein = ParseDecimal(TxtProtein.Text);
+                if (!protein.HasValue || protein < 0 || protein > 1000)
+                {
+                    MessageBox.Show("Укажите корректный общий белок.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return false;
+                }
+
+                decimal? alt = ParseDecimal(TxtAlt.Text);
+                if (!alt.HasValue || alt < 0 || alt > 5000)
+                {
+                    MessageBox.Show("Укажите корректное значение АЛТ.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return false;
                 }
             }
 
@@ -268,8 +271,11 @@ namespace WpfApp1.Pages
                     HemoglobinGdl = result == "Допущен" ? ParseDecimal(TxtHemoglobin.Text) : null,
                     WeightKg = result == "Допущен" ? ParseDecimal(TxtWeight.Text) : null,
                     TemperatureC = result == "Допущен" ? ParseDecimal(TxtTemperature.Text) : null,
-                    PulseBpm = result == "Допущен" && !string.IsNullOrWhiteSpace(TxtPulse.Text) ? short.Parse(TxtPulse.Text.Trim()) : (short?)null,
-                    BloodPressure = result == "Допущен" && !string.IsNullOrWhiteSpace(TxtBloodPressure.Text) ? TxtBloodPressure.Text.Trim() : null,
+                    PulseBpm = result == "Допущен" ? short.Parse(TxtPulse.Text.Trim()) : (short?)null,
+                    SystolicBP = result == "Допущен" ? short.Parse(TxtSystolic.Text.Trim()) : (short?)null,
+                    DiastolicBP = result == "Допущен" ? short.Parse(TxtDiastolic.Text.Trim()) : (short?)null,
+                    TotalProteinGdl = result == "Допущен" ? ParseDecimal(TxtProtein.Text) : null,
+                    AltUL = result == "Допущен" ? ParseDecimal(TxtAlt.Text) : null,
                     Notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim()
                 };
 
@@ -280,9 +286,13 @@ namespace WpfApp1.Pages
                     var donorToUpdate = db.Donors.Find(exam.DonorId);
                     if (donorToUpdate != null)
                     {
-                        donorToUpdate.Status = "Временное отстранение";
-                        donorToUpdate.DisqualifiedUntil = exam.ExamDate.AddDays(60);
-                        MessageBox.Show($"Донор автоматически отстранён до {donorToUpdate.DisqualifiedUntil.Value:dd.MM.yyyy}.", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                        var proposedUntil = exam.ExamDate.AddDays(60);
+                        if (donorToUpdate.DisqualifiedUntil == null || proposedUntil > donorToUpdate.DisqualifiedUntil)
+                        {
+                            donorToUpdate.Status = "Временное отстранение";
+                            donorToUpdate.DisqualifiedUntil = proposedUntil;
+                        }
+                        MessageBox.Show($"Донор отстранен до {donorToUpdate.DisqualifiedUntil.Value:dd.MM.yyyy}.", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
 
@@ -321,11 +331,12 @@ namespace WpfApp1.Pages
                         worksheet.Cell(1, 3).Value = "Донор";
                         worksheet.Cell(1, 4).Value = "Врач";
                         worksheet.Cell(1, 5).Value = "Результат";
-                        worksheet.Cell(1, 6).Value = "Причина отвода";
-                        worksheet.Cell(1, 7).Value = "Гемоглобин";
-                        worksheet.Cell(1, 8).Value = "Вес";
-                        worksheet.Cell(1, 9).Value = "Температура";
-                        worksheet.Cell(1, 10).Value = "Давление";
+                        worksheet.Cell(1, 6).Value = "Гемоглобин";
+                        worksheet.Cell(1, 7).Value = "АД (Сист/Диаст)";
+                        worksheet.Cell(1, 8).Value = "Белок";
+                        worksheet.Cell(1, 9).Value = "АЛТ";
+                        worksheet.Cell(1, 10).Value = "Причина отвода";
+                        worksheet.Cell(1, 11).Value = "Примечание";
 
                         for (int i = 0; i < data.Count; i++)
                         {
@@ -334,11 +345,12 @@ namespace WpfApp1.Pages
                             worksheet.Cell(i + 2, 3).Value = data[i].Donor.FullName;
                             worksheet.Cell(i + 2, 4).Value = data[i].Employee.FullName;
                             worksheet.Cell(i + 2, 5).Value = data[i].Result;
-                            worksheet.Cell(i + 2, 6).Value = data[i].RejectionReason;
-                            worksheet.Cell(i + 2, 7).Value = data[i].HemoglobinGdl;
-                            worksheet.Cell(i + 2, 8).Value = data[i].WeightKg;
-                            worksheet.Cell(i + 2, 9).Value = data[i].TemperatureC;
-                            worksheet.Cell(i + 2, 10).Value = data[i].BloodPressure;
+                            worksheet.Cell(i + 2, 6).Value = data[i].HemoglobinGdl;
+                            worksheet.Cell(i + 2, 7).Value = $"{data[i].SystolicBP}/{data[i].DiastolicBP}";
+                            worksheet.Cell(i + 2, 8).Value = data[i].TotalProteinGdl;
+                            worksheet.Cell(i + 2, 9).Value = data[i].AltUL;
+                            worksheet.Cell(i + 2, 10).Value = data[i].RejectionReason;
+                            worksheet.Cell(i + 2, 11).Value = data[i].Notes;
                         }
 
                         worksheet.Columns().AdjustToContents();

@@ -13,16 +13,13 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
-            <Setter Property="Background" Value="#F9FAFB"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" 
-                                CornerRadius="6">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
                             <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
                         </Border>
                     </ControlTemplate>
@@ -34,13 +31,16 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
-            <Setter Property="Background" Value="#F9FAFB"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <Style x:Key="ModernDatePicker" TargetType="DatePicker">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <Style TargetType="TextBlock" x:Key="FormLabel">
@@ -119,7 +119,8 @@
                           IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" 
                           HorizontalGridLinesBrush="#E5E7EB" BorderThickness="0"
                           RowBackground="White" AlternatingRowBackground="#F9FAFB" 
-                          RowHeight="40" Background="Transparent" Foreground="#374151">
+                          RowHeight="40" Background="Transparent" Foreground="#374151"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Background" Value="#F3F4F6"/>
@@ -129,12 +130,27 @@
                         </Style>
                     </DataGrid.Resources>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Дата" Binding="{Binding ExamDate, StringFormat=\{0:dd.MM.yyyy\}}" Width="90"/>
-                        <DataGridTextColumn Header="Донор" Binding="{Binding Donor.FullName}" Width="*"/>
-                        <DataGridTextColumn Header="Врач" Binding="{Binding Employee.FullName}" Width="*"/>
-                        <DataGridTextColumn Header="Результат" Binding="{Binding Result}" Width="100"/>
-                        <DataGridTextColumn Header="Гемоглобин" Binding="{Binding HemoglobinGdl}" Width="90"/>
-                        <DataGridTextColumn Header="Давление" Binding="{Binding BloodPressure}" Width="90"/>
+                        <DataGridTextColumn Header="Дата осмотра" Binding="{Binding ExamDate, StringFormat=\{0:dd.MM.yyyy\}}" MinWidth="110"/>
+                        <DataGridTextColumn Header="Донор" Binding="{Binding Donor.FullName}" MinWidth="180"/>
+                        <DataGridTextColumn Header="Врач" Binding="{Binding Employee.FullName}" MinWidth="160"/>
+                        <DataGridTextColumn Header="Результат осмотра" Binding="{Binding Result}" MinWidth="140"/>
+                        <DataGridTextColumn Header="Гемоглобин (г/л)" Binding="{Binding HemoglobinGdl, StringFormat=\{0:F1\}}" MinWidth="130"/>
+                        <DataGridTextColumn Header="Вес (кг)" Binding="{Binding WeightKg, StringFormat=\{0:F1\}}" MinWidth="80"/>
+                        <DataGridTextColumn Header="Температура (°C)" Binding="{Binding TemperatureC, StringFormat=\{0:F1\}}" MinWidth="130"/>
+                        <DataGridTextColumn Header="Пульс (уд/мин)" Binding="{Binding PulseBpm}" MinWidth="120"/>
+                        <DataGridTemplateColumn Header="Давление (Сист. / Диаст.)" MinWidth="190">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock VerticalAlignment="Center" Padding="5,0,0,0">
+                                        <Run Text="{Binding SystolicBP}"/><Run Text="/"/><Run Text="{Binding DiastolicBP}"/>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Общий белок (г/л)" Binding="{Binding TotalProteinGdl, StringFormat=\{0:F1\}}" MinWidth="140"/>
+                        <DataGridTextColumn Header="АЛТ (Ед/л)" Binding="{Binding AltUL, StringFormat=\{0:F1\}}" MinWidth="100"/>
+                        <DataGridTextColumn Header="Причина отвода" Binding="{Binding RejectionReason}" MinWidth="150"/>
+                        <DataGridTextColumn Header="Дополнительные пометки" Binding="{Binding Notes}" Width="*" MinWidth="180"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
@@ -162,7 +178,7 @@
                     </ComboBox>
 
                     <StackPanel x:Name="PnlRejection" Visibility="Collapsed">
-                        <TextBlock Text="Причина отвода (мин. 10 символов) *" Style="{StaticResource FormLabel}"/>
+                        <TextBlock Text="Причина отвода *" Style="{StaticResource FormLabel}"/>
                         <TextBox x:Name="TxtRejectionReason" Style="{StaticResource ModernTextBox}" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
                     </StackPanel>
 
@@ -173,12 +189,10 @@
                                 <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Гемоглобин (г/л) *" Style="{StaticResource FormLabel}"/>
                                 <TextBox x:Name="TxtHemoglobin" Style="{StaticResource ModernTextBox}"/>
                             </StackPanel>
-
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="Вес (кг) *" Style="{StaticResource FormLabel}"/>
                                 <TextBox x:Name="TxtWeight" Style="{StaticResource ModernTextBox}"/>
@@ -191,20 +205,42 @@
                                 <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Температура (°C) *" Style="{StaticResource FormLabel}"/>
                                 <TextBox x:Name="TxtTemperature" Style="{StaticResource ModernTextBox}"/>
                             </StackPanel>
-
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Пульс (уд/мин)" Style="{StaticResource FormLabel}"/>
+                                <TextBlock Text="Пульс (уд/мин) *" Style="{StaticResource FormLabel}"/>
                                 <TextBox x:Name="TxtPulse" Style="{StaticResource ModernTextBox}"/>
                             </StackPanel>
                         </Grid>
 
-                        <TextBlock Text="Артериальное давление" Style="{StaticResource FormLabel}"/>
-                        <TextBox x:Name="TxtBloodPressure" Style="{StaticResource ModernTextBox}" ToolTip="Например: 120/80"/>
+                        <TextBlock Text="Давление (Сист. / Диаст.) *" Style="{StaticResource FormLabel}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TxtSystolic" Grid.Column="0" Style="{StaticResource ModernTextBox}" ToolTip="Систолическое (верхнее)"/>
+                            <TextBox x:Name="TxtDiastolic" Grid.Column="2" Style="{StaticResource ModernTextBox}" ToolTip="Диастолическое (нижнее)"/>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Общий белок (г/л) *" Style="{StaticResource FormLabel}"/>
+                                <TextBox x:Name="TxtProtein" Style="{StaticResource ModernTextBox}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="АЛТ (Ед/л) *" Style="{StaticResource FormLabel}"/>
+                                <TextBox x:Name="TxtAlt" Style="{StaticResource ModernTextBox}"/>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
 
                     <TextBlock Text="Дополнительные пометки" Style="{StaticResource FormLabel}"/>

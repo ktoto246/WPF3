@@ -9,11 +9,12 @@
       Title="Журнал выдачи и списания" Loaded="Page_Loaded" Background="#F3F4F6">
 
     <Page.Resources>
+        <!-- Обновили цвета рамок и фон, теперь всё видно заебись -->
         <Style x:Key="ModernTextBox" TargetType="TextBox">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="Background" Value="#F9FAFB"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -29,12 +30,15 @@
         <Style x:Key="ModernComboBox" TargetType="ComboBox">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="Background" Value="#F9FAFB"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <Style x:Key="ModernDatePicker" TargetType="DatePicker">
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <Style TargetType="TextBlock" x:Key="FormLabel">
@@ -164,7 +168,8 @@
                       HeadersVisibility="Column" GridLinesVisibility="Horizontal" 
                       HorizontalGridLinesBrush="#E5E7EB" BorderThickness="0" Margin="15"
                       RowBackground="White" AlternatingRowBackground="#F9FAFB" 
-                      RowHeight="40" Background="Transparent" Foreground="#374151">
+                      RowHeight="40" Background="Transparent" Foreground="#374151"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridColumnHeader">
                         <Setter Property="Background" Value="#F3F4F6"/>
@@ -174,15 +179,15 @@
                     </Style>
                 </DataGrid.Resources>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Дата" Binding="{Binding IssueDate, StringFormat=\{0:dd.MM.yyyy\}}" Width="90"/>
-                    <DataGridTextColumn Header="Операция" Binding="{Binding IssueType}" Width="100"/>
-                    <DataGridTextColumn Header="LOT Компонента" Binding="{Binding LotNumber}" Width="130"/>
-                    <DataGridTextColumn Header="Тип компонента" Binding="{Binding ComponentType}" Width="150"/>
-                    <DataGridTextColumn Header="Объем" Binding="{Binding VolumeMl}" Width="70"/>
-                    <DataGridTextColumn Header="Гр/Рез" Binding="{Binding BloodInfo}" Width="80"/>
-                    <DataGridTextColumn Header="Получатель" Binding="{Binding RecipientName}" Width="180"/>
-                    <DataGridTextColumn Header="Причина (Списание)" Binding="{Binding WriteOffReason}" Width="140"/>
-                    <DataGridTextColumn Header="Сотрудник" Binding="{Binding EmployeeName}" Width="150"/>
+                    <DataGridTextColumn Header="Дата" Binding="{Binding IssueDate, StringFormat=\{0:dd.MM.yyyy\}}" MinWidth="90"/>
+                    <DataGridTextColumn Header="Операция" Binding="{Binding IssueType}" MinWidth="100"/>
+                    <DataGridTextColumn Header="LOT Компонента" Binding="{Binding LotNumber}" MinWidth="140"/>
+                    <DataGridTextColumn Header="Тип компонента" Binding="{Binding ComponentType}" MinWidth="160"/>
+                    <DataGridTextColumn Header="Объем" Binding="{Binding VolumeMl}" MinWidth="70"/>
+                    <DataGridTextColumn Header="Гр/Рез" Binding="{Binding BloodInfo}" MinWidth="80"/>
+                    <DataGridTextColumn Header="Получатель" Binding="{Binding RecipientName}" MinWidth="180" Width="*"/>
+                    <DataGridTextColumn Header="Причина (Списание)" Binding="{Binding WriteOffReason}" MinWidth="150"/>
+                    <DataGridTextColumn Header="Сотрудник" Binding="{Binding EmployeeName}" MinWidth="160"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

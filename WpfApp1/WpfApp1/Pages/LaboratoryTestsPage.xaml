@@ -1,4 +1,4 @@
-﻿<Page x:Class="WpfApp1.Pages.DonorsPage"
+﻿<Page x:Class="WpfApp1.Pages.LaboratoryTestsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:WpfApp1.Pages"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="Доноры" Loaded="Page_Loaded" Background="#F3F4F6">
+     Title="Лабораторные исследования" Loaded="Page_Loaded" Background="#F3F4F6">
 
     <Page.Resources>
         <Style x:Key="ModernTextBox" TargetType="TextBox">
@@ -113,11 +113,10 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Реестр доноров отделения" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
+                <TextBlock Text="Журнал лабораторных исследований" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
 
-                <DataGrid x:Name="DonorsGrid" Grid.Row="1" AutoGenerateColumns="False" 
-                          IsReadOnly="True" SelectionChanged="DonorsGrid_SelectionChanged"
-                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" 
+                <DataGrid x:Name="TestsGrid" Grid.Row="1" AutoGenerateColumns="False" 
+                          IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" 
                           HorizontalGridLinesBrush="#E5E7EB" BorderThickness="0"
                           RowBackground="White" AlternatingRowBackground="#F9FAFB" 
                           RowHeight="40" Background="Transparent" Foreground="#374151"
@@ -131,20 +130,22 @@
                         </Style>
                     </DataGrid.Resources>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ФИО донора" Binding="{Binding FullName}" MinWidth="160"/>
-                        <DataGridTextColumn Header="Дата рождения" Binding="{Binding BirthDate, StringFormat=\{0:dd.MM.yyyy\}}" MinWidth="120"/>
-                        <DataGridTextColumn Header="Пол" Binding="{Binding Gender}" MinWidth="60"/>
-                        <DataGridTextColumn Header="Группа крови" Binding="{Binding BloodGroup}" MinWidth="100"/>
-                        <DataGridTextColumn Header="Резус-фактор" Binding="{Binding RhFactor}" MinWidth="100"/>
-                        <DataGridTextColumn Header="Kell-антиген" Binding="{Binding KellAntigen}" MinWidth="100"/>
-                        <DataGridTextColumn Header="Паспортные данные" Binding="{Binding PassportData}" MinWidth="140"/>
-                        <DataGridTextColumn Header="Контактный телефон" Binding="{Binding ContactPhone}" MinWidth="140"/>
-                        <DataGridTextColumn Header="Адрес проживания" Binding="{Binding Address}" MinWidth="140"/>
-                        <DataGridTextColumn Header="Email" Binding="{Binding Email}" MinWidth="150"/>
-                        <DataGridTextColumn Header="Медицинский статус" Binding="{Binding Status}" MinWidth="150"/>
-                        <DataGridTextColumn Header="Отстранение действительно до" Binding="{Binding DisqualifiedUntil, StringFormat=\{0:dd.MM.yyyy\}}" MinWidth="200"/>
-                        <DataGridCheckBoxColumn Header="Почётный донор России" Binding="{Binding IsHonoraryDonor}" MinWidth="160" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="Примечания / Причины отводов" Binding="{Binding Notes}" Width="*" MinWidth="200"/>
+                        <DataGridTextColumn Header="Дата тестирования *" Binding="{Binding TestDate, StringFormat=\{0:dd.MM.yyyy\}}" MinWidth="130"/>
+                        <DataGridTextColumn Header="Донация *" Binding="{Binding Donation.DonationNumber}" MinWidth="130"/>
+                        <DataGridTextColumn Header="Лаборант" Binding="{Binding Employee.FullName}" MinWidth="150"/>
+
+                        <DataGridTextColumn Header="ИФА ВИЧ *" Binding="{Binding HIV_Result}" MinWidth="110"/>
+                        <DataGridTextColumn Header="ИФА HBsAg *" Binding="{Binding HBsAg_Result}" MinWidth="110"/>
+                        <DataGridTextColumn Header="ИФА HCV *" Binding="{Binding HCV_Result}" MinWidth="110"/>
+                        <DataGridTextColumn Header="Сифилис *" Binding="{Binding Syphilis_Result}" MinWidth="110"/>
+
+                        <DataGridTextColumn Header="НАТ ВИЧ" Binding="{Binding NAT_HIV}" MinWidth="110"/>
+                        <DataGridTextColumn Header="НАТ HBV" Binding="{Binding NAT_HBV}" MinWidth="110"/>
+                        <DataGridTextColumn Header="НАТ HCV" Binding="{Binding NAT_HCV}" MinWidth="110"/>
+
+                        <DataGridTextColumn Header="АЛТ (Ед/л)" Binding="{Binding AltUL, StringFormat=\{0:F1\}}" MinWidth="90"/>
+                        <DataGridTextColumn Header="Итоговый результат *" Binding="{Binding OverallResult}" MinWidth="160"/>
+                        <DataGridTextColumn Header="Примечание" Binding="{Binding Notes}" Width="*" MinWidth="150"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
@@ -157,32 +158,13 @@
 
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="20">
-                    <TextBlock Text="Карточка донора" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
+                    <TextBlock Text="Внесение результатов" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
 
-                    <TextBlock Text="ФИО донора *" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="TxtFullName" Style="{StaticResource ModernTextBox}"/>
+                    <TextBlock Text="Донация *" Style="{StaticResource FormLabel}"/>
+                    <ComboBox x:Name="CmbDonation" Style="{StaticResource ModernComboBox}" DisplayMemberPath="DonationNumber" SelectedValuePath="DonationId"/>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Дата рождения *" Style="{StaticResource FormLabel}"/>
-                            <DatePicker x:Name="DpBirthDate" Style="{StaticResource ModernDatePicker}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="Пол *" Style="{StaticResource FormLabel}"/>
-                            <ComboBox x:Name="CmbGender" Style="{StaticResource ModernComboBox}">
-                                <ComboBoxItem Content="М"/>
-                                <ComboBoxItem Content="Ж"/>
-                            </ComboBox>
-                        </StackPanel>
-                    </Grid>
-
-                    <TextBlock Text="Паспортные данные (Серия Номер) *" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="TxtPassport" Style="{StaticResource ModernTextBox}" ToolTip="Формат: XXXX XXXXXX"/>
+                    <TextBlock Text="Дата тестирования *" Style="{StaticResource FormLabel}"/>
+                    <DatePicker x:Name="DpTestDate" Style="{StaticResource ModernDatePicker}"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -192,71 +174,98 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Группа крови *" Style="{StaticResource FormLabel}"/>
-                            <ComboBox x:Name="CmbBloodGroup" Style="{StaticResource ModernComboBox}">
-                                <ComboBoxItem Content="I"/>
-                                <ComboBoxItem Content="II"/>
-                                <ComboBoxItem Content="III"/>
-                                <ComboBoxItem Content="IV"/>
+                            <TextBlock Text="ИФА ВИЧ *" Style="{StaticResource FormLabel}"/>
+                            <ComboBox x:Name="CmbHIV" Style="{StaticResource ModernComboBox}">
+                                <ComboBoxItem Content="Отрицательный"/>
+                                <ComboBoxItem Content="Положительный"/>
+                                <ComboBoxItem Content="Сомнительный"/>
                             </ComboBox>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="Резус-фактор *" Style="{StaticResource FormLabel}"/>
-                            <ComboBox x:Name="CmbRhFactor" Style="{StaticResource ModernComboBox}">
-                                <ComboBoxItem Content="+"/>
-                                <ComboBoxItem Content="-"/>
+                            <TextBlock Text="ИФА HBsAg *" Style="{StaticResource FormLabel}"/>
+                            <ComboBox x:Name="CmbHBsAg" Style="{StaticResource ModernComboBox}">
+                                <ComboBoxItem Content="Отрицательный"/>
+                                <ComboBoxItem Content="Положительный"/>
+                                <ComboBoxItem Content="Сомнительный"/>
                             </ComboBox>
                         </StackPanel>
                     </Grid>
 
-                    <TextBlock Text="Kell-антиген" Style="{StaticResource FormLabel}"/>
-                    <ComboBox x:Name="CmbKell" Style="{StaticResource ModernComboBox}">
-                        <ComboBoxItem Content="K+"/>
-                        <ComboBoxItem Content="K-"/>
-                        <ComboBoxItem Content="Kp^a"/>
-                        <ComboBoxItem Content="Js^a"/>
-                    </ComboBox>
-
-                    <TextBlock Text="Контактный телефон" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="TxtPhone" Style="{StaticResource ModernTextBox}" ToolTip="Можно вводить сплошным текстом (например: 89001234567)" LostFocus="TxtPhone_LostFocus"/>
-
-                    <TextBlock Text="Email" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="TxtEmail" Style="{StaticResource ModernTextBox}"/>
-
-                    <TextBlock Text="Адрес проживания" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="TxtAddress" Style="{StaticResource ModernTextBox}"/>
-
-                    <CheckBox x:Name="ChkHonorary" Content="Почётный донор России" FontWeight="SemiBold" Margin="0,0,0,10" Checked="ChkHonorary_Changed" Unchecked="ChkHonorary_Changed"/>
-                    <TextBox x:Name="TxtHonoraryNumber" Style="{StaticResource ModernTextBox}" Visibility="Collapsed" ToolTip="Номер удостоверения"/>
-
-                    <TextBlock Text="Медицинский статус *" Style="{StaticResource FormLabel}"/>
-                    <ComboBox x:Name="CmbStatus" Style="{StaticResource ModernComboBox}" SelectionChanged="CmbStatus_SelectionChanged">
-                        <ComboBoxItem Content="Активен"/>
-                        <ComboBoxItem Content="Временное отстранение"/>
-                        <ComboBoxItem Content="Постоянное отстранение"/>
-                    </ComboBox>
-
-                    <StackPanel x:Name="PnlDisqualified" Visibility="Collapsed">
-                        <TextBlock Text="Отстранение действительно до *" Style="{StaticResource FormLabel}"/>
-                        <DatePicker x:Name="DpDisqualifiedUntil" Style="{StaticResource ModernDatePicker}"/>
-                    </StackPanel>
-
-                    <TextBlock Text="Примечания / Причины отводов" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="TxtNotes" Style="{StaticResource ModernTextBox}" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
-
-                    <Grid Margin="0,5,0,10">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="10"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Button x:Name="BtnAdd" Grid.Column="0" Content="Добавить" Style="{StaticResource PrimaryBtn}" Click="BtnAdd_Click"/>
-                        <Button x:Name="BtnUpdate" Grid.Column="2" Content="Сохранить" Style="{StaticResource ActionBtn}" Click="BtnUpdate_Click"/>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="ИФА HCV *" Style="{StaticResource FormLabel}"/>
+                            <ComboBox x:Name="CmbHCV" Style="{StaticResource ModernComboBox}">
+                                <ComboBoxItem Content="Отрицательный"/>
+                                <ComboBoxItem Content="Положительный"/>
+                                <ComboBoxItem Content="Сомнительный"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Сифилис *" Style="{StaticResource FormLabel}"/>
+                            <ComboBox x:Name="CmbSyphilis" Style="{StaticResource ModernComboBox}">
+                                <ComboBoxItem Content="Отрицательный"/>
+                                <ComboBoxItem Content="Положительный"/>
+                                <ComboBoxItem Content="Сомнительный"/>
+                            </ComboBox>
+                        </StackPanel>
                     </Grid>
 
-                    <Separator Margin="0,5,0,10" Background="#E5E7EB"/>
+                    <TextBlock Text="НАТ-тестирование (ПЦР)" Style="{StaticResource FormLabel}" FontWeight="Bold" Margin="0,10,0,5"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="ВИЧ" Style="{StaticResource FormLabel}"/>
+                            <ComboBox x:Name="CmbNAT_HIV" Style="{StaticResource ModernComboBox}">
+                                <ComboBoxItem Content="Отрицательный"/>
+                                <ComboBoxItem Content="Положительный"/>
+                                <ComboBoxItem Content="Не выполнялся"/>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="HBV" Style="{StaticResource FormLabel}"/>
+                            <ComboBox x:Name="CmbNAT_HBV" Style="{StaticResource ModernComboBox}">
+                                <ComboBoxItem Content="Отрицательный"/>
+                                <ComboBoxItem Content="Положительный"/>
+                                <ComboBoxItem Content="Не выполнялся"/>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="4">
+                            <TextBlock Text="HCV" Style="{StaticResource FormLabel}"/>
+                            <ComboBox x:Name="CmbNAT_HCV" Style="{StaticResource ModernComboBox}">
+                                <ComboBoxItem Content="Отрицательный"/>
+                                <ComboBoxItem Content="Положительный"/>
+                                <ComboBoxItem Content="Не выполнялся"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="АЛТ (Ед/л)" Style="{StaticResource FormLabel}"/>
+                    <TextBox x:Name="TxtAlt" Style="{StaticResource ModernTextBox}"/>
+
+                    <TextBlock Text="Итоговый результат *" Style="{StaticResource FormLabel}"/>
+                    <ComboBox x:Name="CmbOverall" Style="{StaticResource ModernComboBox}">
+                        <ComboBoxItem Content="Годен"/>
+                        <ComboBoxItem Content="Брак"/>
+                    </ComboBox>
+
+                    <TextBlock Text="Примечание" Style="{StaticResource FormLabel}"/>
+                    <TextBox x:Name="TxtNotes" Style="{StaticResource ModernTextBox}" Height="50" TextWrapping="Wrap" AcceptsReturn="True"/>
+
+                    <Button x:Name="BtnAdd" Content="Сохранить результаты" Style="{StaticResource PrimaryBtn}" Margin="0,10,0,15" Click="BtnAdd_Click"/>
 
                     <Button x:Name="BtnClear" Content="Очистить форму" Style="{StaticResource ActionBtn}" Margin="0,0,0,10" Click="BtnClear_Click"/>
                     <Button x:Name="BtnExport" Content="Экспорт в Excel" Style="{StaticResource PrimaryBtn}" Background="#10B981" Click="BtnExport_Click">

@@ -13,8 +13,8 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
-            <Setter Property="Background" Value="#F9FAFB"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -31,13 +31,16 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
-            <Setter Property="Background" Value="#F9FAFB"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <Style x:Key="ModernDatePicker" TargetType="DatePicker">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <Style TargetType="TextBlock" x:Key="FormLabel">
@@ -115,7 +118,8 @@
                               IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" 
                               HorizontalGridLinesBrush="#E5E7EB" BorderThickness="0"
                               RowBackground="White" AlternatingRowBackground="#F9FAFB" 
-                              RowHeight="40" Background="Transparent" Foreground="#374151">
+                              RowHeight="40" Background="Transparent" Foreground="#374151"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <DataGrid.Resources>
                             <Style TargetType="DataGridColumnHeader">
                                 <Setter Property="Background" Value="#F3F4F6"/>
@@ -125,12 +129,13 @@
                             </Style>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Дата" Binding="{Binding DonationDate, StringFormat=\{0:dd.MM.yyyy\}}" Width="90"/>
-                            <DataGridTextColumn Header="Донор" Binding="{Binding Donor.FullName}" Width="*"/>
-                            <DataGridTextColumn Header="Тип" Binding="{Binding DonationType}" Width="120"/>
-                            <DataGridTextColumn Header="Объем (мл)" Binding="{Binding VolumeMl}" Width="90"/>
-                            <DataGridTextColumn Header="Статус" Binding="{Binding MedicalStatus}" Width="110"/>
-                            <DataGridTemplateColumn Header="Действия" Width="160">
+                            <DataGridTextColumn Header="Номер донации" Binding="{Binding DonationNumber}" MinWidth="150"/>
+                            <DataGridTextColumn Header="Дата" Binding="{Binding DonationDate, StringFormat=\{0:dd.MM.yyyy\}}" MinWidth="100"/>
+                            <DataGridTextColumn Header="Донор" Binding="{Binding Donor.FullName}" MinWidth="180" Width="*"/>
+                            <DataGridTextColumn Header="Тип" Binding="{Binding DonationType}" MinWidth="140"/>
+                            <DataGridTextColumn Header="Объем (мл)" Binding="{Binding VolumeMl}" MinWidth="100"/>
+                            <DataGridTextColumn Header="Статус" Binding="{Binding MedicalStatus}" MinWidth="120"/>
+                            <DataGridTemplateColumn Header="Действия" MinWidth="120">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

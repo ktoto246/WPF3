@@ -19,9 +19,6 @@ using WpfApp1.Models;
 
 namespace WpfApp1.Pages
 {
-    /// <summary>
-    /// Логика взаимодействия для DonationsPage.xaml
-    /// </summary>
     public partial class DonationsPage : Page
     {
         private int _rejectDonationId = 0;
@@ -45,6 +42,7 @@ namespace WpfApp1.Pages
             {
                 DonationsGrid.ItemsSource = db.Donations
                     .Include(d => d.Donor)
+                    .Include(d => d.Employee)
                     .OrderByDescending(d => d.DonationDate)
                     .ThenByDescending(d => d.DonationId)
                     .ToList();
@@ -55,7 +53,24 @@ namespace WpfApp1.Pages
         {
             using (var db = new BloodBankContext())
             {
-                CmbDonor.ItemsSource = db.Donors.OrderBy(d => d.FullName).ToList();
+                DateTime today = DateTime.Today;
+
+                var eligibleDonorIds = db.MedicalExams
+                    .Where(m => m.ExamDate == today && m.Result == "Допущен")
+                    .Select(m => m.DonorId)
+                    .ToList();
+
+                var alreadyDonatedIds = db.Donations
+                    .Where(d => d.DonationDate == today)
+                    .Select(d => d.DonorId)
+                    .ToList();
+
+                var availableDonorIds = eligibleDonorIds.Except(alreadyDonatedIds).ToList();
+
+                CmbDonor.ItemsSource = db.Donors
+                    .Where(d => availableDonorIds.Contains(d.DonorId))
+                    .OrderBy(d => d.FullName)
+                    .ToList();
             }
         }
 
@@ -65,67 +80,32 @@ namespace WpfApp1.Pages
             {
                 using (var db = new BloodBankContext())
                 {
-                    var donor = db.Donors.Find(selectedDonor.DonorId);
-                    if (donor != null)
+                    var todaysExam = db.MedicalExams
+                        .FirstOrDefault(m => m.DonorId == selectedDonor.DonorId && m.ExamDate == DateTime.Today && m.Result == "Допущен");
+
+                    if (todaysExam != null && CmbExam != null)
                     {
-                        if (donor.Status == "Постоянное отстранение" || (donor.Status == "Временное отстранение" && donor.DisqualifiedUntil.HasValue && donor.DisqualifiedUntil.Value.Date >= DateTime.Today))
-                        {
-                            MessageBox.Show("Донор отстранён от донаций.", "Блокировка", MessageBoxButton.OK, MessageBoxImage.Error);
-                            DisableForm();
-                            return;
-                        }
-
-                        var todaysExam = db.MedicalExams
-                            .Where(m => m.DonorId == donor.DonorId && m.ExamDate == DateTime.Today && m.Result == "Допущен")
-                            .FirstOrDefault();
-
-                        if (todaysExam == null)
-                        {
-                            MessageBox.Show("У донора нет допуска врача на сегодня. Сначала проведите осмотр.", "Блокировка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            DisableForm();
-                            return;
-                        }
-
                         CmbExam.ItemsSource = new[] { todaysExam };
                         CmbExam.SelectedIndex = 0;
-                        EnableForm();
                     }
                 }
             }
         }
 
-        private void DisableForm()
-        {
-            BtnAdd.IsEnabled = false;
-            CmbDonationType.IsEnabled = false;
-            TxtVolume.IsEnabled = false;
-            DpDonationDate.IsEnabled = false;
-            CmbExam.ItemsSource = null;
-        }
-
-        private void EnableForm()
-        {
-            BtnAdd.IsEnabled = true;
-            CmbDonationType.IsEnabled = true;
-            TxtVolume.IsEnabled = true;
-            DpDonationDate.IsEnabled = true;
-        }
-
         private void BtnClear_Click(object sender, RoutedEventArgs e)
         {
             CmbDonor.SelectedIndex = -1;
-            CmbExam.ItemsSource = null;
+            if (CmbExam != null) CmbExam.ItemsSource = null;
             CmbDonationType.SelectedIndex = -1;
             TxtVolume.Clear();
             DpDonationDate.SelectedDate = DateTime.Today;
-            EnableForm();
         }
 
         private bool ValidateForm()
         {
-            if (CmbDonor.SelectedItem == null || CmbExam.SelectedItem == null)
+            if (CmbDonor.SelectedItem == null)
             {
-                MessageBox.Show("Не выбран донор или отсутствует допуск.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Не выбран донор. В списке доступны только доноры, успешно прошедшие медосмотр СЕГОДНЯ.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 
@@ -148,7 +128,8 @@ namespace WpfApp1.Pages
             if ((type == "Тромбоциты" || type == "Эритроциты (аферез)" || type == "Гранулоциты") && (volume < 200 || volume > 400)) { MessageBox.Show($"Объем для {type}: 200-400 мл.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning); return false; }
 
             int donorId = (CmbDonor.SelectedItem as Donor).DonorId;
-            DateTime donationDate = DpDonationDate.SelectedDate.Value.Date;
+            DateTime donationDate = DpDonationDate.SelectedDate ?? DateTime.Today;
+            string donorGender = (CmbDonor.SelectedItem as Donor).Gender;
 
             using (var db = new BloodBankContext())
             {
@@ -160,7 +141,14 @@ namespace WpfApp1.Pages
                 if (lastDonation != null)
                 {
                     int daysPassed = (donationDate - lastDonation.DonationDate).Days;
-                    int requiredInterval = type == "Цельная кровь" ? 60 : 14;
+
+                    int requiredInterval = type switch
+                    {
+                        "Цельная кровь" => 60,
+                        "Эритроциты (аферез)" => 30,
+                        "Гранулоциты" => 30,
+                        _ => 14
+                    };
 
                     if (daysPassed < requiredInterval)
                     {
@@ -174,9 +162,12 @@ namespace WpfApp1.Pages
                 {
                     int currentYear = donationDate.Year;
                     int donationsThisYear = db.Donations.Count(d => d.DonorId == donorId && d.DonationType == "Цельная кровь" && d.DonationDate.Year == currentYear && d.MedicalStatus != "Брак");
-                    if (donationsThisYear >= 5)
+
+                    int annualLimit = donorGender == "Ж" ? 4 : 5;
+
+                    if (donationsThisYear >= annualLimit)
                     {
-                        MessageBox.Show("Донор исчерпал годовой лимит сдачи цельной крови (5 раз в год).", "Блокировка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"Донор исчерпал годовой лимит сдачи цельной крови ({annualLimit} раз(а) в год для данного пола).", "Блокировка", MessageBoxButton.OK, MessageBoxImage.Error);
                         return false;
                     }
                 }
@@ -191,23 +182,60 @@ namespace WpfApp1.Pages
 
             using (var db = new BloodBankContext())
             {
-                var donation = new Donation
+                int donorId = (CmbDonor.SelectedItem as Donor).DonorId;
+                DateTime today = DpDonationDate.SelectedDate ?? DateTime.Today;
+
+                var todayExam = db.MedicalExams
+                    .FirstOrDefault(m => m.DonorId == donorId && m.ExamDate == today && m.Result == "Допущен");
+
+                string newDonationNumber = $"DON-{today:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+
+                var newDonation = new Donation
                 {
-                    DonorId = (CmbDonor.SelectedItem as Donor).DonorId,
+                    DonationNumber = newDonationNumber,
+                    DonorId = donorId,
                     EmployeeId = AppSession.CurrentEmployee.EmployeeId,
-                    ExamId = (CmbExam.SelectedItem as MedicalExam).ExamId,
-                    DonationDate = DpDonationDate.SelectedDate.Value.Date,
+                    ExamId = todayExam?.ExamId,
+                    DonationDate = today,
                     DonationType = (CmbDonationType.SelectedItem as ComboBoxItem).Content.ToString(),
                     VolumeMl = int.Parse(TxtVolume.Text.Trim()),
                     MedicalStatus = "На проверке"
                 };
 
-                db.Donations.Add(donation);
+                db.Donations.Add(newDonation);
                 db.SaveChanges();
+                MessageBox.Show("Донация успешно зарегистрирована.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
             LoadData();
+            LoadDonors();
             BtnClear_Click(null, null);
+        }
+
+        private void CreatePlasmaWithQuarantine(BloodBankContext db, int donationId, string lotNumber, int volumeMl, DateTime collectionDate)
+        {
+            var plasmaComponent = new BloodComponent
+            {
+                DonationId = donationId,
+                LotNumber = lotNumber,
+                ComponentType = "Свежезамороженная плазма",
+                VolumeMl = volumeMl,
+                CollectionDate = collectionDate,
+                ExpirationDate = collectionDate.AddDays(365),
+                Status = "На карантине"
+            };
+
+            db.BloodComponents.Add(plasmaComponent);
+            db.SaveChanges();
+
+            var quarantine = new PlasmaQuarantine
+            {
+                ComponentId = plasmaComponent.ComponentId,
+                StartDate = collectionDate,
+                Status = "На карантине"
+            };
+
+            db.PlasmaQuarantines.Add(quarantine);
         }
 
         private void Approve_Click(object sender, RoutedEventArgs e)
@@ -221,7 +249,25 @@ namespace WpfApp1.Pages
             var donation = (sender as Button).DataContext as Donation;
             if (donation == null || donation.MedicalStatus != "На проверке") return;
 
-            var result = MessageBox.Show("Допустить донацию и разделить на компоненты?", "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            // ЖЕСТКАЯ ПРОВЕРКА ЛАБОРАТОРИИ
+            using (var checkDb = new BloodBankContext())
+            {
+                var labTest = checkDb.LaboratoryTests.FirstOrDefault(t => t.DonationId == donation.DonationId);
+
+                if (labTest == null)
+                {
+                    MessageBox.Show("Донация еще не прошла лабораторное исследование! Допуск невозможен.", "Блокировка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                if (labTest.OverallResult == "Брак")
+                {
+                    MessageBox.Show("Лаборатория выявила инфекции (Брак). Эту донацию нужно отбраковать, а не допускать!", "Блокировка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
+            var result = MessageBox.Show("Лаборатория пройдена успешно. Допустить донацию и разделить на компоненты?", "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
                 using (var db = new BloodBankContext())
@@ -236,11 +282,11 @@ namespace WpfApp1.Pages
                         if (dbDonation.DonationType == "Цельная кровь")
                         {
                             db.BloodComponents.Add(new BloodComponent { DonationId = dbDonation.DonationId, LotNumber = baseLot + "-A", ComponentType = "Эритроцитарная масса", VolumeMl = 280, CollectionDate = dbDonation.DonationDate, ExpirationDate = dbDonation.DonationDate.AddDays(42), Status = "В наличии" });
-                            db.BloodComponents.Add(new BloodComponent { DonationId = dbDonation.DonationId, LotNumber = baseLot + "-B", ComponentType = "Свежезамороженная плазма", VolumeMl = 170, CollectionDate = dbDonation.DonationDate, ExpirationDate = dbDonation.DonationDate.AddDays(365), Status = "В наличии" });
+                            CreatePlasmaWithQuarantine(db, dbDonation.DonationId, baseLot + "-B", 170, dbDonation.DonationDate);
                         }
                         else if (dbDonation.DonationType == "Плазма")
                         {
-                            db.BloodComponents.Add(new BloodComponent { DonationId = dbDonation.DonationId, LotNumber = baseLot + "-A", ComponentType = "Свежезамороженная плазма", VolumeMl = dbDonation.VolumeMl, CollectionDate = dbDonation.DonationDate, ExpirationDate = dbDonation.DonationDate.AddDays(365), Status = "В наличии" });
+                            CreatePlasmaWithQuarantine(db, dbDonation.DonationId, baseLot + "-A", dbDonation.VolumeMl, dbDonation.DonationDate);
                         }
                         else if (dbDonation.DonationType == "Тромбоциты")
                         {
@@ -274,13 +320,13 @@ namespace WpfApp1.Pages
             if (donation == null || donation.MedicalStatus != "На проверке") return;
 
             _rejectDonationId = donation.DonationId;
-            TxtRejectReason.Clear();
-            RejectOverlay.Visibility = Visibility.Visible;
+            if (TxtRejectReason != null) TxtRejectReason.Clear();
+            if (RejectOverlay != null) RejectOverlay.Visibility = Visibility.Visible;
         }
 
         private void ConfirmReject_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(TxtRejectReason.Text))
+            if (string.IsNullOrWhiteSpace(TxtRejectReason?.Text))
             {
                 MessageBox.Show("Укажите причину брака.", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -295,25 +341,26 @@ namespace WpfApp1.Pages
 
                     var newIssue = new ComponentIssue
                     {
-                        ComponentId = 0, // Условно, компоненты не созданы, логируем в примечания
+                        ComponentId = 0,
                         EmployeeId = AppSession.CurrentEmployee.EmployeeId,
                         IssueDate = DateTime.Today,
                         IssueType = "Списание",
-                        WriteOffReason = "Брак на этапе проверки",
+                        WriteOffReason = "Брак на этапе проверки/лаборатории",
                         Comments = $"Причина брака донации: {TxtRejectReason.Text.Trim()}"
                     };
 
+                    db.ComponentIssues.Add(newIssue);
                     db.SaveChanges();
                 }
             }
 
-            RejectOverlay.Visibility = Visibility.Collapsed;
+            if (RejectOverlay != null) RejectOverlay.Visibility = Visibility.Collapsed;
             LoadData();
         }
 
         private void CancelReject_Click(object sender, RoutedEventArgs e)
         {
-            RejectOverlay.Visibility = Visibility.Collapsed;
+            if (RejectOverlay != null) RejectOverlay.Visibility = Visibility.Collapsed;
         }
 
         private void BtnExport_Click(object sender, RoutedEventArgs e)
@@ -335,21 +382,23 @@ namespace WpfApp1.Pages
 
                         worksheet.Cell(1, 1).Value = "ID";
                         worksheet.Cell(1, 2).Value = "Дата";
-                        worksheet.Cell(1, 3).Value = "Донор";
-                        worksheet.Cell(1, 4).Value = "Сотрудник";
-                        worksheet.Cell(1, 5).Value = "Тип донации";
-                        worksheet.Cell(1, 6).Value = "Объем (мл)";
-                        worksheet.Cell(1, 7).Value = "Статус";
+                        worksheet.Cell(1, 3).Value = "Номер донации";
+                        worksheet.Cell(1, 4).Value = "Донор";
+                        worksheet.Cell(1, 5).Value = "Сотрудник";
+                        worksheet.Cell(1, 6).Value = "Тип донации";
+                        worksheet.Cell(1, 7).Value = "Объем (мл)";
+                        worksheet.Cell(1, 8).Value = "Статус";
 
                         for (int i = 0; i < data.Count; i++)
                         {
                             worksheet.Cell(i + 2, 1).Value = data[i].DonationId;
                             worksheet.Cell(i + 2, 2).Value = data[i].DonationDate.ToString("yyyy-MM-dd");
-                            worksheet.Cell(i + 2, 3).Value = data[i].Donor.FullName;
-                            worksheet.Cell(i + 2, 4).Value = data[i].Employee.FullName;
-                            worksheet.Cell(i + 2, 5).Value = data[i].DonationType;
-                            worksheet.Cell(i + 2, 6).Value = data[i].VolumeMl;
-                            worksheet.Cell(i + 2, 7).Value = data[i].MedicalStatus;
+                            worksheet.Cell(i + 2, 3).Value = data[i].DonationNumber;
+                            worksheet.Cell(i + 2, 4).Value = data[i].Donor.FullName;
+                            worksheet.Cell(i + 2, 5).Value = data[i].Employee.FullName;
+                            worksheet.Cell(i + 2, 6).Value = data[i].DonationType;
+                            worksheet.Cell(i + 2, 7).Value = data[i].VolumeMl;
+                            worksheet.Cell(i + 2, 8).Value = data[i].MedicalStatus;
                         }
 
                         worksheet.Columns().AdjustToContents();

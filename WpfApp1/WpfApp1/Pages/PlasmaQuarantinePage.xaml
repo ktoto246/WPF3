@@ -1,15 +1,14 @@
-﻿<Page x:Class="WpfApp1.Pages.BloodComponentsPage"
+﻿<Page x:Class="WpfApp1.Pages.PlasmaQuarantinePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:WpfApp1.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="Компоненты крови" Loaded="Page_Loaded" Background="#F3F4F6">
+      d:DesignHeight="450" d:DesignWidth="1000"
+      Title="Карантинизация плазмы" Loaded="Page_Loaded" Background="#F3F4F6">
 
     <Page.Resources>
-        <!-- Пофиксили невидимые поля: белый фон и нормальная серая рамка -->
         <Style x:Key="ModernTextBox" TargetType="TextBox">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10,8"/>
@@ -91,19 +90,12 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
-        <Style TargetType="RadioButton" x:Key="ModernRadio">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#1F2937"/>
-            <Setter Property="Margin" Value="0,0,15,0"/>
-        </Style>
     </Page.Resources>
 
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="6.5*"/>
-            <ColumnDefinition Width="3.5*"/>
+            <ColumnDefinition Width="7*"/>
+            <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,10,0">
@@ -117,10 +109,10 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Склад компонентов крови" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
+                <TextBlock Text="Контроль карантинизации плазмы" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
 
-                <DataGrid x:Name="ComponentsGrid" Grid.Row="1" AutoGenerateColumns="False" 
-                          IsReadOnly="True" SelectionChanged="ComponentsGrid_SelectionChanged"
+                <DataGrid x:Name="QuarantineGrid" Grid.Row="1" AutoGenerateColumns="False" 
+                          IsReadOnly="True" SelectionChanged="QuarantineGrid_SelectionChanged"
                           HeadersVisibility="Column" GridLinesVisibility="Horizontal" 
                           HorizontalGridLinesBrush="#E5E7EB" BorderThickness="0"
                           RowBackground="White" AlternatingRowBackground="#F9FAFB" 
@@ -135,67 +127,50 @@
                         </Style>
                     </DataGrid.Resources>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Партия (LOT)" Binding="{Binding LotNumber}" MinWidth="130"/>
-                        <DataGridTextColumn Header="Тип компонента" Binding="{Binding ComponentType}" MinWidth="200" Width="*"/>
-                        <DataGridTextColumn Header="Объем (мл)" Binding="{Binding VolumeMl}" MinWidth="90"/>
-                        <DataGridTextColumn Header="Годен до" Binding="{Binding ExpirationDate, StringFormat=\{0:dd.MM.yyyy\}}" MinWidth="90"/>
-                        <DataGridTextColumn Header="Место хранения" Binding="{Binding StorageLocation}" MinWidth="150"/>
-                        <DataGridTextColumn Header="Статус" Binding="{Binding Status}" MinWidth="110"/>
+                        <DataGridTextColumn Header="LOT партии" Binding="{Binding BloodComponent.LotNumber}" MinWidth="130"/>
+                        <!-- Вот он, твой донор, сразу видно -->
+                        <DataGridTextColumn Header="Донор" Binding="{Binding BloodComponent.Donation.Donor.FullName}" MinWidth="180" Width="*"/>
+                        <DataGridTextColumn Header="Объем (мл)" Binding="{Binding BloodComponent.VolumeMl}" MinWidth="90"/>
+                        <DataGridTextColumn Header="Начало карантина" Binding="{Binding StartDate, StringFormat=\{0:dd.MM.yyyy\}}" MinWidth="130"/>
+                        <DataGridTextColumn Header="Плановый выход" Binding="{Binding PlannedReleaseDate, StringFormat=\{0:dd.MM.yyyy\}}" MinWidth="120"/>
+                        <DataGridTextColumn Header="Статус" Binding="{Binding Status}" MinWidth="130"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
         </Border>
 
-        <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0">
+        <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0" VerticalAlignment="Top">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" Direction="270" ShadowDepth="2" Opacity="0.05"/>
             </Border.Effect>
 
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="20">
-                    <TextBlock Text="Управление местом хранения" FontSize="16" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
-                    <TextBlock Text="Текущее местоположение (макс. 100 симв.)" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="TxtStorageLocation" Style="{StaticResource ModernTextBox}"/>
-                    <Button x:Name="BtnUpdateLocation" Content="Обновить место хранения" Style="{StaticResource ActionBtn}" Margin="0,0,0,20" Click="BtnUpdateLocation_Click"/>
+            <StackPanel Margin="20">
+                <TextBlock Text="Управление статусом" FontSize="18" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
 
-                    <Separator Margin="0,0,0,20" Background="#E5E7EB"/>
+                <TextBlock Text="Выбранная партия (LOT)" Style="{StaticResource FormLabel}"/>
+                <TextBox x:Name="TxtSelectedLot" Style="{StaticResource ModernTextBox}" IsReadOnly="True"/>
 
-                    <TextBlock Text="Оформление выдачи / списания" FontSize="16" FontWeight="Bold" Foreground="#1F2937" Margin="0,0,0,15"/>
+                <TextBlock Text="Планируемый выход" Style="{StaticResource FormLabel}"/>
+                <TextBox x:Name="TxtPlannedDate" Style="{StaticResource ModernTextBox}" IsReadOnly="True"/>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                        <RadioButton x:Name="RbIssue" Content="Выдача в ЛПУ" Style="{StaticResource ModernRadio}" IsChecked="True" Checked="RbOperation_Checked"/>
-                        <RadioButton x:Name="RbWriteOff" Content="Списание (брак/срок)" Style="{StaticResource ModernRadio}" Checked="RbOperation_Checked"/>
-                    </StackPanel>
+                <TextBlock Text="Повторная донация (Подтверждение) *" Style="{StaticResource FormLabel}"/>
+                <ComboBox x:Name="CmbConfirmDonation" Style="{StaticResource ModernComboBox}" DisplayMemberPath="DonationNumber" SelectedValuePath="DonationId"/>
 
-                    <StackPanel x:Name="PnlRecipient" Visibility="Visible">
-                        <TextBlock Text="Медицинское учреждение (Получатель) *" Style="{StaticResource FormLabel}"/>
-                        <ComboBox x:Name="CmbRecipient" Style="{StaticResource ModernComboBox}" DisplayMemberPath="Name" SelectedValuePath="RecipientId"/>
-                    </StackPanel>
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <StackPanel x:Name="PnlWriteOff" Visibility="Collapsed">
-                        <TextBlock Text="Причина списания *" Style="{StaticResource FormLabel}"/>
-                        <ComboBox x:Name="CmbWriteOffReason" Style="{StaticResource ModernComboBox}">
-                            <ComboBoxItem Content="Истёк срок"/>
-                            <ComboBoxItem Content="Брак"/>
-                            <ComboBoxItem Content="Бой"/>
-                            <ComboBoxItem Content="Иное"/>
-                        </ComboBox>
-                    </StackPanel>
+                    <Button x:Name="BtnRelease" Grid.Column="0" Content="Снять с карантина" Style="{StaticResource ActionBtn}" Background="#10B981" Foreground="White" Click="BtnRelease_Click"/>
+                    <Button x:Name="BtnDispose" Grid.Column="2" Content="Утилизировать" Style="{StaticResource PrimaryBtn}" Click="BtnDispose_Click"/>
+                </Grid>
 
-                    <TextBlock Text="Дополнительные комментарии" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="TxtComments" Style="{StaticResource ModernTextBox}" Height="50" TextWrapping="Wrap" AcceptsReturn="True"/>
+                <Separator Margin="0,20,0,15" Background="#E5E7EB"/>
 
-                    <Button x:Name="BtnProcess" Content="Подтвердить операцию" Style="{StaticResource PrimaryBtn}" Margin="0,10,0,15" Click="BtnProcess_Click"/>
-
-                    <Button x:Name="BtnExport" Content="Экспорт в Excel" Style="{StaticResource PrimaryBtn}" Background="#10B981" Click="BtnExport_Click">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                </StackPanel>
-            </ScrollViewer>
+                <Button x:Name="BtnExport" Content="Экспорт отчета в Excel" Style="{StaticResource ActionBtn}" Click="BtnExport_Click"/>
+            </StackPanel>
         </Border>
     </Grid>
 </Page>

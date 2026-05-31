@@ -7,61 +7,65 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using WpfApp1.Models;
 
 namespace WpfApp1.Pages
 {
-    /// <summary>
-    /// Логика взаимодействия для ReportsPage.xaml
-    /// </summary>
     public partial class ReportsPage : Page, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        // Свойства для привязки графиков
-        private IEnumerable<ISeries> _bloodGroupSeries;
-        public IEnumerable<ISeries> BloodGroupSeries
+        private ISeries[] _bloodGroupSeries;
+        public ISeries[] BloodGroupSeries
         {
             get => _bloodGroupSeries;
             set { _bloodGroupSeries = value; OnPropertyChanged(nameof(BloodGroupSeries)); }
         }
 
-        private IEnumerable<ISeries> _dynamicsSeries;
-        public IEnumerable<ISeries> DynamicsSeries
+        private ISeries[] _dynamicsSeries;
+        public ISeries[] DynamicsSeries
         {
             get => _dynamicsSeries;
             set { _dynamicsSeries = value; OnPropertyChanged(nameof(DynamicsSeries)); }
         }
-        public Axis[] DynamicsXAxes { get; set; }
 
-        private IEnumerable<ISeries> _expirationSeries;
-        public IEnumerable<ISeries> ExpirationSeries
+        private Axis[] _dynamicsXAxes;
+        public Axis[] DynamicsXAxes
         {
-            get => _expirationSeries;
-            set { _expirationSeries = value; OnPropertyChanged(nameof(ExpirationSeries)); }
+            get => _dynamicsXAxes;
+            set { _dynamicsXAxes = value; OnPropertyChanged(nameof(DynamicsXAxes)); }
         }
-        public Axis[] ExpirationXAxes { get; set; }
 
-        private IEnumerable<ISeries> _topDonorsSeries;
-        public IEnumerable<ISeries> TopDonorsSeries
+        private ISeries[] _writeOffSeries;
+        public ISeries[] WriteOffSeries
+        {
+            get => _writeOffSeries;
+            set { _writeOffSeries = value; OnPropertyChanged(nameof(WriteOffSeries)); }
+        }
+
+        private ISeries[] _topDonorsSeries;
+        public ISeries[] TopDonorsSeries
         {
             get => _topDonorsSeries;
             set { _topDonorsSeries = value; OnPropertyChanged(nameof(TopDonorsSeries)); }
         }
-        public Axis[] TopDonorsXAxes { get; set; }
-        public Axis[] TopDonorsYAxes { get; set; }
+
+        private Axis[] _topDonorsXAxes;
+        public Axis[] TopDonorsXAxes
+        {
+            get => _topDonorsXAxes;
+            set { _topDonorsXAxes = value; OnPropertyChanged(nameof(TopDonorsXAxes)); }
+        }
+
+        private Axis[] _topDonorsYAxes;
+        public Axis[] TopDonorsYAxes
+        {
+            get => _topDonorsYAxes;
+            set { _topDonorsYAxes = value; OnPropertyChanged(nameof(TopDonorsYAxes)); }
+        }
 
         public ReportsPage()
         {
@@ -81,6 +85,10 @@ namespace WpfApp1.Pages
             DateTime today = DateTime.Today;
             DpDynFrom.SelectedDate = today.AddMonths(-1);
             DpDynTo.SelectedDate = today;
+
+            DpWriteOffFrom.SelectedDate = today.AddMonths(-6);
+            DpWriteOffTo.SelectedDate = today;
+
             DpTopFrom.SelectedDate = today.AddMonths(-1);
             DpTopTo.SelectedDate = today;
 
@@ -106,14 +114,36 @@ namespace WpfApp1.Pages
         {
             using (var db = new BloodBankContext())
             {
-                var stock = db.BloodComponents
-                    .Include(c => c.Donation.Donor)
+                var components = db.BloodComponents
+                    .Include(c => c.Donation).ThenInclude(d => d.Donor)
                     .Where(c => c.Status == "В наличии")
-                    .GroupBy(c => c.Donation.Donor.BloodGroup + " " + c.Donation.Donor.RhFactor)
+                    .ToList();
+
+                var stock = components
+                    .Where(c => c.Donation?.Donor != null)
+                    .GroupBy(c => $"{c.Donation.Donor.BloodGroup} {c.Donation.Donor.RhFactor}")
                     .Select(g => new { Group = g.Key, TotalVolume = g.Sum(c => c.VolumeMl) })
                     .ToList();
 
-                var series = new List<PieSeries<int>>();
+                if (stock.Count == 0)
+                {
+                    BloodGroupSeries = new ISeries[]
+                    {
+                        new PieSeries<int>
+                        {
+                            Values = new int[] { 1 },
+                            Name = "Склад пуст",
+                            Fill = new SolidColorPaint(SKColors.LightGray),
+                            DataLabelsPaint = new SolidColorPaint(SKColors.Black),
+                            DataLabelsSize = 14,
+                            DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Middle,
+                            DataLabelsFormatter = point => "Нет данных"
+                        }
+                    };
+                    return;
+                }
+
+                var series = new List<ISeries>();
                 foreach (var item in stock)
                 {
                     series.Add(new PieSeries<int>
@@ -121,12 +151,12 @@ namespace WpfApp1.Pages
                         Values = new int[] { item.TotalVolume },
                         Name = item.Group,
                         DataLabelsPaint = new SolidColorPaint(SKColors.White),
-                        DataLabelsSize = 15,
+                        DataLabelsSize = 14,
                         DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Middle,
                         DataLabelsFormatter = point => $"{point.Context.Series.Name}\n{point.Model} мл"
                     });
                 }
-                BloodGroupSeries = series;
+                BloodGroupSeries = series.ToArray();
             }
         }
         private void BtnRefreshTab1_Click(object sender, RoutedEventArgs e) => LoadTab1Data();
@@ -141,13 +171,24 @@ namespace WpfApp1.Pages
             {
                 var dynamics = db.Donations
                     .Where(d => d.DonationDate >= from && d.DonationDate <= to && d.MedicalStatus != "Брак")
-                    .GroupBy(d => d.DonationDate)
+                    .ToList()
+                    .GroupBy(d => d.DonationDate.Date)
                     .Select(g => new { Date = g.Key, Volume = g.Sum(d => d.VolumeMl) })
                     .OrderBy(g => g.Date)
                     .ToList();
 
+                if (!dynamics.Any())
+                {
+                    DynamicsSeries = new ISeries[]
+                    {
+                        new LineSeries<int> { Values = new int[] { 0 }, Name = "Нет донаций" }
+                    };
+                    DynamicsXAxes = new Axis[] { new Axis { Labels = new[] { "Нет данных" }, Name = "Дата" } };
+                    return;
+                }
+
                 var values = dynamics.Select(d => d.Volume).ToArray();
-                var labels = dynamics.Select(d => d.Date.ToString("dd.MM.yyyy")).ToArray();
+                var labels = dynamics.Select(d => d.Date.ToString("dd.MM")).ToArray();
 
                 DynamicsSeries = new ISeries[]
                 {
@@ -162,34 +203,57 @@ namespace WpfApp1.Pages
                 };
 
                 DynamicsXAxes = new Axis[] { new Axis { Labels = labels, Name = "Дата" } };
-                OnPropertyChanged(nameof(DynamicsXAxes));
             }
         }
         private void BtnRefreshTab2_Click(object sender, RoutedEventArgs e) => LoadTab2Data();
 
         private void LoadTab3Data()
         {
+            if (!DpWriteOffFrom.SelectedDate.HasValue || !DpWriteOffTo.SelectedDate.HasValue) return;
+            DateTime from = DpWriteOffFrom.SelectedDate.Value.Date;
+            DateTime to = DpWriteOffTo.SelectedDate.Value.Date;
+
             using (var db = new BloodBankContext())
             {
-                DateTime today = DateTime.Today;
-                DateTime nextWeek = today.AddDays(7);
+                var writeOffs = db.ComponentIssues
+                    .Where(ci => ci.IssueType == "Списание" && ci.IssueDate >= from && ci.IssueDate <= to)
+                    .ToList()
+                    .GroupBy(ci => string.IsNullOrWhiteSpace(ci.WriteOffReason) ? "Иное" : ci.WriteOffReason)
+                    .Select(g => new { Reason = g.Key, Count = g.Count() })
+                    .ToList();
 
-                int expired = db.BloodComponents.Count(c => c.Status == "В наличии" && c.ExpirationDate < today);
-                int expiringSoon = db.BloodComponents.Count(c => c.Status == "В наличии" && c.ExpirationDate >= today && c.ExpirationDate <= nextWeek);
-                int good = db.BloodComponents.Count(c => c.Status == "В наличии" && c.ExpirationDate > nextWeek);
-
-                ExpirationSeries = new ISeries[]
+                if (!writeOffs.Any())
                 {
-                    new ColumnSeries<int>
+                    WriteOffSeries = new ISeries[]
                     {
-                        Values = new int[] { expired, expiringSoon, good },
-                        Name = "Количество компонентов",
-                        Stroke = null
-                    }
-                };
+                        new PieSeries<int>
+                        {
+                            Values = new int[] { 1 },
+                            Name = "Брака нет",
+                            Fill = new SolidColorPaint(SKColors.LightGray),
+                            DataLabelsPaint = new SolidColorPaint(SKColors.Black),
+                            DataLabelsSize = 14,
+                            DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Middle,
+                            DataLabelsFormatter = point => "Списаний не было"
+                        }
+                    };
+                    return;
+                }
 
-                ExpirationXAxes = new Axis[] { new Axis { Labels = new string[] { "Просрочено", "Истекает (<7 дней)", "В норме" } } };
-                OnPropertyChanged(nameof(ExpirationXAxes));
+                var series = new List<ISeries>();
+                foreach (var item in writeOffs)
+                {
+                    series.Add(new PieSeries<int>
+                    {
+                        Values = new int[] { item.Count },
+                        Name = item.Reason,
+                        DataLabelsPaint = new SolidColorPaint(SKColors.White),
+                        DataLabelsSize = 14,
+                        DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Middle,
+                        DataLabelsFormatter = point => $"{point.Context.Series.Name}\n{point.Model} шт."
+                    });
+                }
+                WriteOffSeries = series.ToArray();
             }
         }
         private void BtnRefreshTab3_Click(object sender, RoutedEventArgs e) => LoadTab3Data();
@@ -205,11 +269,24 @@ namespace WpfApp1.Pages
                 var topDonors = db.Donations
                     .Include(d => d.Donor)
                     .Where(d => d.DonationDate >= from && d.DonationDate <= to && d.MedicalStatus != "Брак")
+                    .ToList()
+                    .Where(d => d.Donor != null)
                     .GroupBy(d => d.Donor.FullName)
                     .Select(g => new { Name = g.Key, TotalVolume = g.Sum(d => d.VolumeMl) })
                     .OrderByDescending(g => g.TotalVolume)
                     .Take(5)
                     .ToList();
+
+                if (!topDonors.Any())
+                {
+                    TopDonorsSeries = new ISeries[]
+                    {
+                        new RowSeries<int> { Values = new int[] { 0 }, Name = "Нет донаций" }
+                    };
+                    TopDonorsXAxes = new Axis[] { new Axis { Name = "Объем (мл)" } };
+                    TopDonorsYAxes = new Axis[] { new Axis { Labels = new[] { "Пусто" } } };
+                    return;
+                }
 
                 var values = topDonors.Select(d => d.TotalVolume).ToArray();
                 var labels = topDonors.Select(d => d.Name).ToArray();
@@ -227,9 +304,6 @@ namespace WpfApp1.Pages
 
                 TopDonorsYAxes = new Axis[] { new Axis { Labels = labels } };
                 TopDonorsXAxes = new Axis[] { new Axis { Name = "Объем сданной крови (мл)" } };
-
-                OnPropertyChanged(nameof(TopDonorsYAxes));
-                OnPropertyChanged(nameof(TopDonorsXAxes));
             }
         }
         private void BtnRefreshTab4_Click(object sender, RoutedEventArgs e) => LoadTab4Data();

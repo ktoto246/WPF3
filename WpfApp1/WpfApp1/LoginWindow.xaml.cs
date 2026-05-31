@@ -94,11 +94,9 @@ namespace WpfApp1
                     }
                 }
             }
-            catch (Exception ex)
+           catch (Exception ex)
             {
-                string errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                MessageBox.Show($"Пиздец под капотом:\n\n{errorMessage}", "Ошибка БД", MessageBoxButton.OK, MessageBoxImage.Error);
-                ErrorText.Text = "Ошибка подключения к БД.";
+                MessageBox.Show($"Ошибка подключения к базе данных: {ex.Message}", "Ошибка БД", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)

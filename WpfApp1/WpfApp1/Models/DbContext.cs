@@ -12,6 +12,9 @@ namespace WpfApp1
         public DbSet<Donation> Donations { get; set; }
         public DbSet<BloodComponent> BloodComponents { get; set; }
         public DbSet<ComponentIssue> ComponentIssues { get; set; }
+        public DbSet<LaboratoryTest> LaboratoryTests { get; set; }
+        public DbSet<PlasmaQuarantine> PlasmaQuarantines { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

@@ -18,9 +18,6 @@ using WpfApp1.Models;
 
 namespace WpfApp1.Pages
 {
-    /// <summary>
-    /// Логика взаимодействия для BloodComponentsPage.xaml
-    /// </summary>
     public partial class BloodComponentsPage : Page
     {
         private BloodComponent _selectedComponent;
@@ -80,10 +77,23 @@ namespace WpfApp1.Pages
                 TxtStorageLocation.Text = component.StorageLocation;
 
                 string role = AppSession.CurrentEmployee?.Role;
-                if ((role == "Лаборант" || role == "Заведующий") && (component.Status == "В наличии" || component.Status == "Забронировано"))
+                bool isAuthorized = (role == "Лаборант" || role == "Заведующий");
+
+                // 1. Место хранения можно менять у того, что физически лежит у нас:
+                if (isAuthorized && (component.Status == "В наличии" || component.Status == "Забронировано" || component.Status == "На карантине"))
                 {
                     BtnUpdateLocation.IsEnabled = true;
                     TxtStorageLocation.IsEnabled = true;
+                }
+                else
+                {
+                    BtnUpdateLocation.IsEnabled = false;
+                    TxtStorageLocation.IsEnabled = false;
+                }
+
+                // 2. Выдавать в больницы или Списывать можно ТОЛЬКО готовое:
+                if (isAuthorized && (component.Status == "В наличии" || component.Status == "Забронировано"))
+                {
                     BtnProcess.IsEnabled = true;
                     RbIssue.IsEnabled = true;
                     RbWriteOff.IsEnabled = true;
@@ -91,8 +101,6 @@ namespace WpfApp1.Pages
                 }
                 else
                 {
-                    BtnUpdateLocation.IsEnabled = false;
-                    TxtStorageLocation.IsEnabled = false;
                     BtnProcess.IsEnabled = false;
                     RbIssue.IsEnabled = false;
                     RbWriteOff.IsEnabled = false;
@@ -104,7 +112,11 @@ namespace WpfApp1.Pages
                 _selectedComponent = null;
                 TxtStorageLocation.Clear();
                 BtnUpdateLocation.IsEnabled = false;
+                TxtStorageLocation.IsEnabled = false;
                 BtnProcess.IsEnabled = false;
+                RbIssue.IsEnabled = false;
+                RbWriteOff.IsEnabled = false;
+                TxtComments.IsEnabled = false;
             }
         }
 

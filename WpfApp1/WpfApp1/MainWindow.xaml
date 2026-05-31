@@ -67,17 +67,17 @@
 
                 <StackPanel Grid.Row="1" Margin="10,0">
                     <TextBlock Text="ОСНОВНЫЕ РАЗДЕЛЫ" Foreground="#6B7280" FontSize="11" FontWeight="Bold" Margin="15,5,0,5"/>
-                    <Button x:Name="BtnDonors" Content="👥 Доноры" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnDonors_Click"/>
-                    <Button x:Name="BtnExams" Content="🩺 Мед. осмотры" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnExams_Click"/>
-                    <Button x:Name="BtnDonations" Content="🩸 Донации" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnDonations_Click"/>
-                    <Button x:Name="BtnComponents" Content="📦 Склад компонентов" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnComponents_Click"/>
-                    <Button x:Name="BtnIssues" Content="🚑 Выдача и списание" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnIssues_Click"/>
-                    <Button x:Name="BtnRecipients" Content="🏢 Получатели крови" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnRecipients_Click"/>
-                    <Button x:Name="BtnEmployees" Content="🔒 Сотрудники системы" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnEmployees_Click"/>
-
+                    <Button x:Name="BtnDonors" Content="Доноры" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnDonors_Click"/>
+                    <Button x:Name="BtnExams" Content="Мед. осмотры" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnExams_Click"/>
+                    <Button x:Name="BtnDonations" Content="Донации" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnDonations_Click"/>
+                    <Button x:Name="BtnLabTests" Content="Лаборатория" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnLabTests_Click"/>
+                    <Button x:Name="BtnComponents" Content="Склад компонентов" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnComponents_Click"/>
+                    <Button x:Name="BtnQuarantine" Content="Карантин плазмы" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnQuarantine_Click"/>
+                    <Button x:Name="BtnIssues" Content="Выдача и списание" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnIssues_Click"/>
+                    <Button x:Name="BtnRecipients" Content="Получатели крови" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnRecipients_Click"/>
+                    <Button x:Name="BtnEmployees" Content="Сотрудники системы" Style="{StaticResource MenuButton}" Visibility="Collapsed" Click="BtnEmployees_Click"/>
                     <Separator Margin="10,10,10,10" Background="#374151"/>
-
-                    <Button x:Name="BtnReports" Content="📊 Аналитика и отчёты" Style="{StaticResource AnalyticsMenuButton}" Visibility="Collapsed" Click="BtnReports_Click"/>
+                    <Button x:Name="BtnReports" Content="Аналитика и отчёты" Style="{StaticResource AnalyticsMenuButton}" Visibility="Collapsed" Click="BtnReports_Click"/>
                 </StackPanel>
 
                 <Button Grid.Row="2" x:Name="BtnLogout" Content="🚪 Выйти из системы" Style="{StaticResource MenuButton}" Foreground="#FCA5A5" Margin="10,0,10,20" Click="BtnLogout_Click"/>

@@ -47,7 +47,9 @@ namespace WpfApp1
                     break;
 
                 case "Лаборант":
+                    BtnLabTests.Visibility = Visibility.Visible;
                     BtnComponents.Visibility = Visibility.Visible;
+                    BtnQuarantine.Visibility = Visibility.Visible;
                     BtnIssues.Visibility = Visibility.Visible;
                     break;
 
@@ -55,11 +57,12 @@ namespace WpfApp1
                     BtnDonors.Visibility = Visibility.Visible;
                     BtnExams.Visibility = Visibility.Visible;
                     BtnDonations.Visibility = Visibility.Visible;
+                    BtnLabTests.Visibility = Visibility.Visible;
                     BtnComponents.Visibility = Visibility.Visible;
+                    BtnQuarantine.Visibility = Visibility.Visible;
                     BtnIssues.Visibility = Visibility.Visible;
                     BtnRecipients.Visibility = Visibility.Visible;
                     BtnEmployees.Visibility = Visibility.Visible;
-
                     BtnReports.Visibility = Visibility.Visible;
                     break;
             }
@@ -70,7 +73,9 @@ namespace WpfApp1
             BtnDonors.Visibility = Visibility.Collapsed;
             BtnExams.Visibility = Visibility.Collapsed;
             BtnDonations.Visibility = Visibility.Collapsed;
+            BtnLabTests.Visibility = Visibility.Collapsed;
             BtnComponents.Visibility = Visibility.Collapsed;
+            BtnQuarantine.Visibility = Visibility.Collapsed;
             BtnIssues.Visibility = Visibility.Collapsed;
             BtnRecipients.Visibility = Visibility.Collapsed;
             BtnEmployees.Visibility = Visibility.Collapsed;
@@ -80,7 +85,9 @@ namespace WpfApp1
         private void BtnDonors_Click(object sender, RoutedEventArgs e) => MainFrame.Navigate(new DonorsPage());
         private void BtnExams_Click(object sender, RoutedEventArgs e) => MainFrame.Navigate(new MedicalExamsPage());
         private void BtnDonations_Click(object sender, RoutedEventArgs e) => MainFrame.Navigate(new DonationsPage());
+        private void BtnLabTests_Click(object sender, RoutedEventArgs e) => MainFrame.Navigate(new LaboratoryTestsPage());
         private void BtnComponents_Click(object sender, RoutedEventArgs e) => MainFrame.Navigate(new BloodComponentsPage());
+        private void BtnQuarantine_Click(object sender, RoutedEventArgs e) => MainFrame.Navigate(new PlasmaQuarantinePage());
         private void BtnIssues_Click(object sender, RoutedEventArgs e) => MainFrame.Navigate(new ComponentIssuesPage());
         private void BtnRecipients_Click(object sender, RoutedEventArgs e) => MainFrame.Navigate(new RecipientsPage());
         private void BtnEmployees_Click(object sender, RoutedEventArgs e) => MainFrame.Navigate(new EmployeesPage());

@@ -76,6 +76,10 @@ namespace WpfApp1.Models
         public DateTime BirthDate { get; set; }
 
         [Required]
+        [MaxLength(1)]
+        public string Gender { get; set; }
+
+        [Required]
         [MaxLength(50)]
         public string PassportData { get; set; }
 
@@ -90,8 +94,14 @@ namespace WpfApp1.Models
         [MaxLength(10)]
         public string? KellAntigen { get; set; }
 
+        [MaxLength(300)]
+        public string? Address { get; set; }
+
         [MaxLength(20)]
         public string? ContactPhone { get; set; }
+
+        [MaxLength(150)]
+        public string? Email { get; set; }
 
         public DateTime RegistrationDate { get; set; } = DateTime.Now;
 
@@ -100,6 +110,11 @@ namespace WpfApp1.Models
         public string Status { get; set; } = "Активен";
 
         public DateTime? DisqualifiedUntil { get; set; }
+
+        public bool IsHonoraryDonor { get; set; } = false;
+
+        [MaxLength(50)]
+        public string? HonoraryDonorNumber { get; set; }
 
         public string? Notes { get; set; }
 
@@ -128,14 +143,17 @@ namespace WpfApp1.Models
 
         public decimal? HemoglobinGdl { get; set; }
 
-        [MaxLength(20)]
-        public string? BloodPressure { get; set; }
+        public short? SystolicBP { get; set; }
+        public short? DiastolicBP { get; set; }
 
         public short? PulseBpm { get; set; }
 
         public decimal? WeightKg { get; set; }
 
         public decimal? TemperatureC { get; set; }
+
+        public decimal? TotalProteinGdl { get; set; }
+        public decimal? AltUL { get; set; }
 
         public string? Notes { get; set; }
 
@@ -153,6 +171,10 @@ namespace WpfApp1.Models
     {
         [Key]
         public int DonationId { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public string DonationNumber { get; set; }
 
         public int DonorId { get; set; }
 
@@ -250,5 +272,125 @@ namespace WpfApp1.Models
 
         [ForeignKey("RecipientId")]
         public virtual Recipient? Recipient { get; set; }
+    }
+    [Table("LaboratoryTests")]
+    public class LaboratoryTest
+    {
+        [Key]
+        public int TestId { get; set; }
+
+        public int DonationId { get; set; }
+
+        public int EmployeeId { get; set; }
+
+        public DateTime TestDate { get; set; } = DateTime.Now;
+
+        [Required]
+        [MaxLength(20)]
+        public string HIV_Result { get; set; }
+
+        [Required]
+        [MaxLength(20)]
+        public string HBsAg_Result { get; set; }
+
+        [Required]
+        [MaxLength(20)]
+        public string HCV_Result { get; set; }
+
+        [Required]
+        [MaxLength(20)]
+        public string Syphilis_Result { get; set; }
+
+        public decimal? AltUL { get; set; }
+
+        [MaxLength(20)]
+        public string? NAT_HIV { get; set; }
+
+        [MaxLength(20)]
+        public string? NAT_HBV { get; set; }
+
+        [MaxLength(20)]
+        public string? NAT_HCV { get; set; }
+
+        [Required]
+        [MaxLength(20)]
+        public string OverallResult { get; set; }
+
+        public string? Notes { get; set; }
+
+        [ForeignKey("DonationId")]
+        public virtual Donation Donation { get; set; }
+
+        [ForeignKey("EmployeeId")]
+        public virtual Employee Employee { get; set; }
+    }
+
+    [Table("PlasmaQuarantine")]
+    public class PlasmaQuarantine
+    {
+        [Key]
+        public int QuarantineId { get; set; }
+
+        public int ComponentId { get; set; }
+
+        public DateTime StartDate { get; set; }
+
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime PlannedReleaseDate { get; set; }
+
+        public int? ConfirmationDonationId { get; set; }
+
+        public int? ConfirmationTestId { get; set; }
+
+        [Required]
+        [MaxLength(30)]
+        public string Status { get; set; } = "На карантине";
+
+        public DateTime? ReleasedDate { get; set; }
+
+        public int? ReleasedByEmployeeId { get; set; }
+
+        [ForeignKey("ComponentId")]
+        public virtual BloodComponent BloodComponent { get; set; }
+
+        [ForeignKey("ConfirmationDonationId")]
+        public virtual Donation? ConfirmationDonation { get; set; }
+
+        [ForeignKey("ConfirmationTestId")]
+        public virtual LaboratoryTest? ConfirmationTest { get; set; }
+
+        [ForeignKey("ReleasedByEmployeeId")]
+        public virtual Employee? ReleasedByEmployee { get; set; }
+    }
+
+    [Table("AuditLog")]
+    public class AuditLog
+    {
+        [Key]
+        public long LogId { get; set; }
+
+        public int? EmployeeId { get; set; }
+
+        public DateTime ActionTimestamp { get; set; } = DateTime.Now;
+
+        [Required]
+        [MaxLength(100)]
+        public string TableName { get; set; }
+
+        public int? RecordId { get; set; }
+
+        [Required]
+        [MaxLength(10)]
+        public string ActionType { get; set; }
+
+        public string? OldValues { get; set; }
+
+        public string? NewValues { get; set; }
+
+        [MaxLength(50)]
+        public string? IPAddress { get; set; }
+
+        [ForeignKey("EmployeeId")]
+        public virtual Employee? Employee { get; set; }
     }
 }
